@@ -1,0 +1,85 @@
+# 工作流名称
+name: Build and Deploy Portfolio Dashboard
+
+# 触发条件
+on:
+  # 1. 允许手动触发
+  workflow_dispatch:
+  # 2. 定时触发：每天 UTC 8点 (北京时间下午4点)
+  schedule:
+    - cron: '0 8 * * *'
+  # 3. 推送到主分支时触发 (便于调试)
+  push:
+    branches: [ "main", "master" ]
+
+# 为 GITHUB_TOKEN 设置权限，允许部署到 GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 只允许一个并发部署，避免冲突
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # 第一步：构建任务 (生成静态文件)
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache data directory
+        uses: actions/cache@v4
+        with:
+          path: data_cache
+          key: ${{ runner.os }}-data-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-data-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run Python script to generate report
+        env:
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+        run: python generate_report.py
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # 上传整个仓库的内容，其中包含了我们刚刚生成的 index.html
+          path: '.'
+
+  # 第二步：部署任务 (将静态文件发布到 Pages)
+  deploy:
+    # 部署任务需要构建任务成功完成
+    needs: build
+    
+    # 为部署任务单独设置权限
+    permissions:
+      pages: write
+      id-token: write
+    
+    # 配置部署环境
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+      
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
