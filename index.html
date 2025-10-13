@@ -1,0 +1,84 @@
+
+        <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Portfolio Performance Dashboard</title>
+            <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+            <style>
+                body::before { content: ''; position: fixed; left: 0; top: 0; width: 100%; height: 100%; will-change: transform; background: radial-gradient(circle at 20% 20%, rgba(10, 178, 240, 0.2), transparent 30%), radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.2), transparent 30%); filter: blur(100px); z-index: -1; }
+                #chart-container { position: relative; }
+            </style>
+        </head>
+        <body class="bg-slate-900 text-slate-200 font-sans">
+            <main class="min-h-screen flex items-center justify-center p-4">
+                <div class="w-full max-w-4xl rounded-2xl bg-slate-800/50 p-6 md:p-8 shadow-2xl ring-1 ring-white/10 backdrop-blur-xl">
+                    <header class="mb-8"><h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Portfolio Dashboard</h1><p class="text-slate-400 text-sm mt-2">Updated: 2025-10-14 00:15:42 UTC</p></header>
+                    <section><h2 class="text-xl font-semibold mb-4 text-slate-300">Performance Chart (Initial: 10,000 CNY)</h2><div id="chart-container" class="h-[400px]"></div></section>
+                    <section class="mt-8"><h2 class="text-xl font-semibold mb-4 text-slate-300">Key Performance Indicators</h2><div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="border-b border-slate-300/20 text-slate-400"><tr><th class="py-3 px-4 font-medium">Metric</th><th class="py-3 px-4 font-medium">Portfolio</th><th class="py-3 px-4 font-medium">Benchmark (SH000300)</th></tr></thead>
+                        <tbody>
+                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Total Return</td><td class="py-3 px-4 font-mono text-green-400">2.78%</td><td class="py-3 px-4 font-mono text-green-400">1.64%</td></tr>
+                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Annualized Return</td><td class="py-3 px-4 font-mono text-green-400">137.29%</td><td class="py-3 px-4 font-mono text-green-400">67.02%</td></tr>
+                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Annualized Volatility</td><td class="py-3 px-4 font-mono">10.52%</td><td class="py-3 px-4 font-mono">19.74%</td></tr>
+                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Max Drawdown</td><td class="py-3 px-4 font-mono text-red-400">-0.25%</td><td class="py-3 px-4 font-mono text-red-400">-2.45%</td></tr>
+                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Sharpe Ratio</td><td class="py-3 px-4 font-mono text-green-400">8.09</td><td class="py-3 px-4 font-mono text-green-400">2.59</td></tr>
+                            <tr><td class="py-3 px-4 font-bold">Sortino Ratio</td><td class="py-3 px-4 font-mono text-green-400">55.15</td><td class="py-3 px-4 font-mono text-green-400">4.04</td></tr>
+                        </tbody></table></div></section>
+                </div>
+            </main>
+            <footer class="text-center text-xs text-slate-600 pb-4">Powered by Python, QuantStats & GitHub Actions</footer>
+            <script>
+                const chartContainer = document.getElementById('chart-container');
+                const chart = LightweightCharts.createChart(chartContainer, { 
+                    layout: { backgroundColor: '#000000', textColor: '#d1d5db' }, 
+                    grid: { vertLines: { visible: false }, horzLines: { visible: false } }, 
+                    rightPriceScale: { scaleMargins: { top: 0.1, bottom: 0.1 }, borderColor: 'rgba(255, 255, 255, 0.2)' }, 
+                    timeScale: { borderColor: 'rgba(255, 255, 255, 0.2)' }, 
+                    crosshair: { horzLine: { visible: false, labelVisible: false } } 
+                });
+
+                // --- 最终的、经过验证的、绝对正确的修正点 ---
+                const portfolioSeries = chart.addSeries(LightweightCharts.AreaSeries, {
+                    topColor: 'rgba(10, 178, 240, 0.5)', bottomColor: 'rgba(10, 178, 240, 0.01)',
+                    lineColor: '#0ab2f0', lineWidth: 2, crossHairMarkerVisible: false
+                });
+                const benchmarkSeries = chart.addSeries(LightweightCharts.AreaSeries, {
+                    topColor: 'rgba(168, 85, 247, 0.5)', bottomColor: 'rgba(168, 85, 247, 0.01)',
+                    lineColor: '#a855f7', lineWidth: 2, crossHairMarkerVisible: false
+                });
+                
+                portfolioSeries.setData([{'time': '2025-09-24', 'value': 10017.03}, {'time': '2025-09-25', 'value': 9992.18}, {'time': '2025-09-26', 'value': 9993.45}, {'time': '2025-09-29', 'value': 10042.48}, {'time': '2025-09-30', 'value': 10067.16}, {'time': '2025-10-09', 'value': 10256.44}, {'time': '2025-10-10', 'value': 10246.98}, {'time': '2025-10-13', 'value': 10278.11}]);
+                benchmarkSeries.setData([{'time': '2025-09-24', 'value': 10102.42}, {'time': '2025-09-25', 'value': 10163.08}, {'time': '2025-09-26', 'value': 10066.97}, {'time': '2025-09-29', 'value': 10221.86}, {'time': '2025-09-30', 'value': 10267.53}, {'time': '2025-10-09', 'value': 10419.72}, {'time': '2025-10-10', 'value': 10214.74}, {'time': '2025-10-13', 'value': 10164.17}]);
+
+                const legend = document.createElement('div');
+                legend.style = `position: absolute; left: 12px; top: 12px; z-index: 10; font-family: sans-serif;`;
+                chartContainer.appendChild(legend);
+                const formatPrice = price => price.toLocaleString('zh-CN', {style: 'currency', currency: 'CNY'});
+                const setLegendText = (pPrice, bPrice, date) => {
+                    legend.innerHTML = `<div class="text-slate-400 text-sm">${date}</div><div class="flex items-center mt-1"><div class="w-3 h-3 rounded-full bg-[#0ab2f0] mr-2"></div><span class="text-slate-300 mr-2 text-lg">Portfolio:</span><span class="font-bold text-xl text-[#0ab2f0]">${pPrice}</span></div><div class="flex items-center mt-1"><div class="w-3 h-3 rounded-full bg-[#a855f7] mr-2"></div><span class="text-slate-300 mr-2 text-lg">Benchmark:</span><span class="font-bold text-xl text-[#a855f7]">${bPrice}</span></div>`;
+                };
+                const updateLegend = param => {
+                    let pValue = 'N/A', bValue = 'N/A', date = '';
+                    const validCrosshairPoint = !(param === undefined || param.time === undefined || param.point.x < 0 || param.point.y < 0);
+                    if (validCrosshairPoint) {
+                        const pData = param.seriesData.get(portfolioSeries);
+                        const bData = param.seriesData.get(benchmarkSeries);
+                        pValue = pData ? formatPrice(pData.value) : 'N/A';
+                        bValue = bData ? formatPrice(bData.value) : 'N/A';
+                        date = param.time;
+                    } else {
+                        const portfolioData = [{'time': '2025-09-24', 'value': 10017.03}, {'time': '2025-09-25', 'value': 9992.18}, {'time': '2025-09-26', 'value': 9993.45}, {'time': '2025-09-29', 'value': 10042.48}, {'time': '2025-09-30', 'value': 10067.16}, {'time': '2025-10-09', 'value': 10256.44}, {'time': '2025-10-10', 'value': 10246.98}, {'time': '2025-10-13', 'value': 10278.11}]; const benchmarkData = [{'time': '2025-09-24', 'value': 10102.42}, {'time': '2025-09-25', 'value': 10163.08}, {'time': '2025-09-26', 'value': 10066.97}, {'time': '2025-09-29', 'value': 10221.86}, {'time': '2025-09-30', 'value': 10267.53}, {'time': '2025-10-09', 'value': 10419.72}, {'time': '2025-10-10', 'value': 10214.74}, {'time': '2025-10-13', 'value': 10164.17}];
+                        if (portfolioData.length > 0) {
+                           const lastPortfolioBar = portfolioData[portfolioData.length - 1];
+                           const lastBenchmarkBar = benchmarkData[benchmarkData.length - 1];
+                           pValue = formatPrice(lastPortfolioBar.value);
+                           bValue = formatPrice(lastBenchmarkBar.value);
+                           date = lastPortfolioBar.time;
+                        }
+                    }
+                    setLegendText(pValue, bValue, date);
+                };
+                chart.subscribeCrosshairMove(updateLegend);
+                updateLegend(undefined);
+                chart.timeScale().fitContent();
+                new ResizeObserver(entries => { if (entries.length === 0 || entries[0].target !== chartContainer) return; const newRect = entries[0].contentRect; chart.applyOptions({ width: newRect.width, height: newRect.height }); }).observe(chartContainer);
+            </script>
+        </body></html>
+        
