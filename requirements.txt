@@ -4,3 +4,4 @@ quantstats
 yfinance
 lxml
 IPython
+playwright

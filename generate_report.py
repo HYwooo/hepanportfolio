@@ -5,16 +5,18 @@ import numpy as np
 import quantstats as qs
 import json
 from datetime import datetime
+from playwright.sync_api import sync_playwright
 
 # --- 配置参数 ---
-API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY') 
+API_KEY = "114514"#os.getenv('ALPHA_VANTAGE_API_KEY') 
 CACHE_DIR = "data_cache"
 TICKERS = ['513110.SHH', '518660.SHH', '159649.SHZ', '515450.SHH']
 BENCHMARK_TICKER = '000300.SHH'
 WEIGHTS = [0.25, 0.25, 0.25, 0.25]
 INITIAL_CAPITAL = 10000
-START_DATE = "2025-09-23" # 注意：我已将日期改为过去，以便您能立即看到效果
+START_DATE = "2025-09-23" 
 RISK_FREE_RATE = 0.02
+OUTPUT_PNG_PATH = "portfolio_chart.png" # 定义输出PNG的文件名
 
 # --- 数据获取模块 ---
 def fetch_data_from_api(ticker):
@@ -175,9 +177,39 @@ def generate_html_report(portfolio_returns=None, benchmark_returns=None, is_futu
     with open("index.html", "w", encoding="utf-8") as f: f.write(html_content)
     print("Report 'index.html' generated successfully.")
 
+# --- 新增: PNG 生成函数 ---
+def generate_png_from_html(html_path="index.html", png_path=OUTPUT_PNG_PATH):
+    """使用Playwright对本地HTML文件中的图表进行截图"""
+    print(f"Starting PNG generation from {html_path}...")
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            page = browser.new_page()
+            
+            # 使用 file:// 协议访问本地 HTML 文件
+            absolute_html_path = os.path.abspath(html_path)
+            page.goto(f'file://{absolute_html_path}')
+            
+            # 等待JavaScript渲染图表 (重要!)
+            # 给予2秒的固定等待时间，确保图表动画和数据加载完成
+            page.wait_for_timeout(2000) 
+            
+            # 定位到图表所在的div容器
+            chart_element = page.locator('#chart-container')
+            
+            # 对该元素进行截图
+            chart_element.screenshot(path=png_path)
+            
+            browser.close()
+            print(f"Successfully generated PNG: {png_path}")
+            return True
+    except Exception as e:
+        print(f"Error during PNG generation: {e}")
+        return False
+    
 # --- 主执行逻辑 ---
 if __name__ == "__main__":
-    if not API_KEY: raise ValueError("Alpha Vantage API Key not found.")
+    if not API_KEY or API_KEY == "YOUR_API_KEY_HERE": raise ValueError("Alpha Vantage API Key not found. Please set it as an environment variable.")
     all_tickers = TICKERS + [BENCHMARK_TICKER]; all_data = {ticker: get_data(ticker) for ticker in all_tickers}
     if any(data is None for data in all_data.values()): print("\nCritical Error: Failed to get data.")
     else:
@@ -188,3 +220,5 @@ if __name__ == "__main__":
             generate_html_report(is_future=True)
         else:
             generate_html_report(portfolio_returns, benchmark_returns)
+            # 在生成HTML报告成功后，调用截图函数
+            generate_png_from_html()
