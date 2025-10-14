@@ -3,7 +3,7 @@ name: Build and Deploy Portfolio Dashboard
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 8 * * *'
+    - cron: '0 10 * * *'
   #push:
   #  branches: [ "main", "master" ]
 
