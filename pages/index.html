@@ -10,16 +10,16 @@
         <body class="bg-slate-900 text-slate-200 font-sans">
             <main class="min-h-screen flex items-center justify-center p-4">
                 <div class="w-full max-w-4xl rounded-2xl bg-slate-800/50 p-6 md:p-8 shadow-2xl ring-1 ring-white/10 backdrop-blur-xl">
-                    <header class="mb-8"><h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Portfolio Dashboard</h1><p class="text-slate-400 text-sm mt-2">Updated: 2025-10-14 10:21:11 UTC</p></header>
+                    <header class="mb-8"><h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Portfolio Dashboard</h1><p class="text-slate-400 text-sm mt-2">Updated: 2025-10-14 10:23:42 UTC</p></header>
                     <section><h2 class="text-xl font-semibold mb-4 text-slate-300">Performance Chart (Initial: 10,000 USD)</h2><div id="chart-container" class="h-[400px]"></div></section>
                     <section class="mt-8"><h2 class="text-xl font-semibold mb-4 text-slate-300">Key Performance Indicators</h2><div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="border-b border-slate-300/20 text-slate-400"><tr><th class="py-3 px-4 font-medium">Metric</th><th class="py-3 px-4 font-medium">Portfolio</th><th class="py-3 px-4 font-medium">Benchmark (SH000300)</th></tr></thead>
                         <tbody>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Total Return</td><td class="py-3 px-4 font-mono text-green-400">2.78%</td><td class="py-3 px-4 font-mono text-green-400">1.64%</td></tr>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Annualized Return</td><td class="py-3 px-4 font-mono text-green-400">137.29%</td><td class="py-3 px-4 font-mono text-green-400">67.02%</td></tr>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Annualized Volatility</td><td class="py-3 px-4 font-mono">10.52%</td><td class="py-3 px-4 font-mono">19.74%</td></tr>
+                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Total Return</td><td class="py-3 px-4 font-mono text-green-400">3.46%</td><td class="py-3 px-4 font-mono text-green-400">1.58%</td></tr>
+                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Annualized Return</td><td class="py-3 px-4 font-mono text-green-400">159.49%</td><td class="py-3 px-4 font-mono text-green-400">55.02%</td></tr>
+                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Annualized Volatility</td><td class="py-3 px-4 font-mono">10.01%</td><td class="py-3 px-4 font-mono">18.53%</td></tr>
                             <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Max Drawdown</td><td class="py-3 px-4 font-mono text-red-400">-0.25%</td><td class="py-3 px-4 font-mono text-red-400">-2.45%</td></tr>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Sharpe Ratio</td><td class="py-3 px-4 font-mono text-green-400">8.09</td><td class="py-3 px-4 font-mono text-green-400">2.59</td></tr>
-                            <tr><td class="py-3 px-4 font-bold">Sortino Ratio</td><td class="py-3 px-4 font-mono text-green-400">55.15</td><td class="py-3 px-4 font-mono text-green-400">4.04</td></tr>
+                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Sharpe Ratio</td><td class="py-3 px-4 font-mono text-green-400">9.39</td><td class="py-3 px-4 font-mono text-green-400">2.34</td></tr>
+                            <tr><td class="py-3 px-4 font-bold">Sortino Ratio</td><td class="py-3 px-4 font-mono text-green-400">64.18</td><td class="py-3 px-4 font-mono text-green-400">3.65</td></tr>
                         </tbody></table></div></section>
                 </div>
             </main>
@@ -44,8 +44,8 @@
                     lineColor: '#a855f7', lineWidth: 2, crossHairMarkerVisible: false
                 });
                 
-                portfolioSeries.setData([{'time': '2025-09-24', 'value': 10017.03}, {'time': '2025-09-25', 'value': 9992.18}, {'time': '2025-09-26', 'value': 9993.45}, {'time': '2025-09-29', 'value': 10042.48}, {'time': '2025-09-30', 'value': 10067.16}, {'time': '2025-10-09', 'value': 10256.44}, {'time': '2025-10-10', 'value': 10246.98}, {'time': '2025-10-13', 'value': 10278.11}]);
-                benchmarkSeries.setData([{'time': '2025-09-24', 'value': 10102.42}, {'time': '2025-09-25', 'value': 10163.08}, {'time': '2025-09-26', 'value': 10066.97}, {'time': '2025-09-29', 'value': 10221.86}, {'time': '2025-09-30', 'value': 10267.53}, {'time': '2025-10-09', 'value': 10419.72}, {'time': '2025-10-10', 'value': 10214.74}, {'time': '2025-10-13', 'value': 10164.17}]);
+                portfolioSeries.setData([{'time': '2025-09-23', 'value': 10065.37}, {'time': '2025-09-24', 'value': 10082.51}, {'time': '2025-09-25', 'value': 10057.39}, {'time': '2025-09-26', 'value': 10058.67}, {'time': '2025-09-29', 'value': 10108.25}, {'time': '2025-09-30', 'value': 10133.29}, {'time': '2025-10-09', 'value': 10324.56}, {'time': '2025-10-10', 'value': 10314.75}, {'time': '2025-10-13', 'value': 10346.42}]);
+                benchmarkSeries.setData([{'time': '2025-09-23', 'value': 9993.74}, {'time': '2025-09-24', 'value': 10096.1}, {'time': '2025-09-25', 'value': 10156.72}, {'time': '2025-09-26', 'value': 10060.68}, {'time': '2025-09-29', 'value': 10215.46}, {'time': '2025-09-30', 'value': 10261.1}, {'time': '2025-10-09', 'value': 10413.2}, {'time': '2025-10-10', 'value': 10208.34}, {'time': '2025-10-13', 'value': 10157.81}]);
 
                 const legend = document.createElement('div');
                 legend.style = `position: absolute; left: 12px; top: 12px; z-index: 10; font-family: sans-serif;`;
@@ -64,7 +64,7 @@
                         bValue = bData ? formatPrice(bData.value) : 'N/A';
                         date = param.time;
                     } else {
-                        const portfolioData = [{'time': '2025-09-24', 'value': 10017.03}, {'time': '2025-09-25', 'value': 9992.18}, {'time': '2025-09-26', 'value': 9993.45}, {'time': '2025-09-29', 'value': 10042.48}, {'time': '2025-09-30', 'value': 10067.16}, {'time': '2025-10-09', 'value': 10256.44}, {'time': '2025-10-10', 'value': 10246.98}, {'time': '2025-10-13', 'value': 10278.11}]; const benchmarkData = [{'time': '2025-09-24', 'value': 10102.42}, {'time': '2025-09-25', 'value': 10163.08}, {'time': '2025-09-26', 'value': 10066.97}, {'time': '2025-09-29', 'value': 10221.86}, {'time': '2025-09-30', 'value': 10267.53}, {'time': '2025-10-09', 'value': 10419.72}, {'time': '2025-10-10', 'value': 10214.74}, {'time': '2025-10-13', 'value': 10164.17}];
+                        const portfolioData = [{'time': '2025-09-23', 'value': 10065.37}, {'time': '2025-09-24', 'value': 10082.51}, {'time': '2025-09-25', 'value': 10057.39}, {'time': '2025-09-26', 'value': 10058.67}, {'time': '2025-09-29', 'value': 10108.25}, {'time': '2025-09-30', 'value': 10133.29}, {'time': '2025-10-09', 'value': 10324.56}, {'time': '2025-10-10', 'value': 10314.75}, {'time': '2025-10-13', 'value': 10346.42}]; const benchmarkData = [{'time': '2025-09-23', 'value': 9993.74}, {'time': '2025-09-24', 'value': 10096.1}, {'time': '2025-09-25', 'value': 10156.72}, {'time': '2025-09-26', 'value': 10060.68}, {'time': '2025-09-29', 'value': 10215.46}, {'time': '2025-09-30', 'value': 10261.1}, {'time': '2025-10-09', 'value': 10413.2}, {'time': '2025-10-10', 'value': 10208.34}, {'time': '2025-10-13', 'value': 10157.81}];
                         if (portfolioData.length > 0) {
                            const lastPortfolioBar = portfolioData[portfolioData.length - 1];
                            const lastBenchmarkBar = benchmarkData[benchmarkData.length - 1];
