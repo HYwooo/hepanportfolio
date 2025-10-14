@@ -101,7 +101,6 @@ def get_data(ticker):
 
 # --- 回测模块 (保持不变) ---
 def run_backtest(assets_data, benchmark_data):
-    # ... (代码不变)
     print("Running backtest..."); portfolio_data = pd.concat(assets_data, axis=1); portfolio_data.columns = TICKERS
     portfolio_data = portfolio_data.loc[START_DATE:]; portfolio_data = portfolio_data.ffill().bfill()
     if portfolio_data.empty: return None, None
