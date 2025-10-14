@@ -1,84 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio Performance Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+      body::before {
+        content: "";
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        will-change: transform;
+        background: radial-gradient(
+            circle at 20% 20%,
+            rgba(10, 178, 240, 0.2),
+            transparent 30%
+          ),
+          radial-gradient(
+            circle at 80% 70%,
+            rgba(168, 85, 247, 0.2),
+            transparent 30%
+          );
+        filter: blur(100px);
+        z-index: -1;
+      }
+      #chart-container {
+        position: relative;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-900 text-slate-200 font-sans">
+    <main class="min-h-screen flex items-center justify-center p-4">
+      <!-- Future/Loading State -->
+      <div
+        id="loading-state"
+        class="text-center p-8 bg-slate-800/50 rounded-lg backdrop-blur-sm ring-1 ring-white/10"
+      >
+        <h1
+          class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500"
+        >
+          Loading Report...
+        </h1>
+        <p class="mt-4">
+          Please wait while we fetch the latest performance data.
+        </p>
+      </div>
 
-        <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Portfolio Performance Dashboard</title>
-            <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-            <style>
-                body::before { content: ''; position: fixed; left: 0; top: 0; width: 100%; height: 100%; will-change: transform; background: radial-gradient(circle at 20% 20%, rgba(10, 178, 240, 0.2), transparent 30%), radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.2), transparent 30%); filter: blur(100px); z-index: -1; }
-                #chart-container { position: relative; }
-            </style>
-        </head>
-        <body class="bg-slate-900 text-slate-200 font-sans">
-            <main class="min-h-screen flex items-center justify-center p-4">
-                <div class="w-full max-w-4xl rounded-2xl bg-slate-800/50 p-6 md:p-8 shadow-2xl ring-1 ring-white/10 backdrop-blur-xl">
-                    <header class="mb-8"><h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Portfolio Dashboard</h1><p class="text-slate-400 text-sm mt-2">Updated: 2025-10-14 19:42:33 UTC</p></header>
-                    <section><h2 class="text-xl font-semibold mb-4 text-slate-300">Performance Chart (Initial: 10,000 USD)</h2><div id="chart-container" class="h-[400px]"></div></section>
-                    <section class="mt-8"><h2 class="text-xl font-semibold mb-4 text-slate-300">Key Performance Indicators</h2><div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="border-b border-slate-300/20 text-slate-400"><tr><th class="py-3 px-4 font-medium">Metric</th><th class="py-3 px-4 font-medium">Portfolio</th><th class="py-3 px-4 font-medium">Benchmark (SH000300)</th></tr></thead>
-                        <tbody>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Total Return</td><td class="py-3 px-4 font-mono text-green-400">3.73%</td><td class="py-3 px-4 font-mono text-green-400">0.36%</td></tr>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Annualized Return</td><td class="py-3 px-4 font-mono text-green-400">151.49%</td><td class="py-3 px-4 font-mono text-green-400">9.58%</td></tr>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Annualized Volatility</td><td class="py-3 px-4 font-mono">9.46%</td><td class="py-3 px-4 font-mono">18.78%</td></tr>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Max Drawdown</td><td class="py-3 px-4 font-mono text-red-400">-0.25%</td><td class="py-3 px-4 font-mono text-red-400">-3.62%</td></tr>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Sharpe Ratio</td><td class="py-3 px-4 font-mono text-green-400">9.60</td><td class="py-3 px-4 font-mono text-green-400">0.47</td></tr>
-                            <tr><td class="py-3 px-4 font-bold">Sortino Ratio</td><td class="py-3 px-4 font-mono text-green-400">65.36</td><td class="py-3 px-4 font-mono text-green-400">0.68</td></tr>
-                        </tbody></table></div></section>
-                </div>
-            </main>
-            <footer class="text-center text-xs text-slate-600 pb-4">Powered by Python, QuantStats & GitHub Actions</footer>
-            <script>
-                const chartContainer = document.getElementById('chart-container');
-                const chart = LightweightCharts.createChart(chartContainer, { 
-                    layout: {  background: { color: 'transparent' }, textColor: '#d1d5db' }, 
-                    grid: { vertLines: { visible: false }, horzLines: { visible: false } }, 
-                    rightPriceScale: { scaleMargins: { top: 0.1, bottom: 0.1 }, borderColor: 'rgba(255, 255, 255, 0.2)' }, 
-                    timeScale: { borderColor: 'rgba(255, 255, 255, 0.2)' }, 
-                    crosshair: { horzLine: { visible: false, labelVisible: false } } 
-                });
+      <!-- Main Report Container (hidden by default) -->
+      <div
+        id="report-container"
+        class="w-full max-w-4xl rounded-2xl bg-slate-800/50 p-6 md:p-8 shadow-2xl ring-1 ring-white/10 backdrop-blur-xl hidden"
+      >
+        <header class="mb-8">
+          <h1
+            class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500"
+          >
+            Portfolio Dashboard
+          </h1>
+          <p class="text-slate-400 text-sm mt-2">
+            Updated: <span id="last-updated">N/A</span>
+          </p>
+        </header>
+        <section>
+          <h2 class="text-xl font-semibold mb-4 text-slate-300">
+            Performance Chart (Initial: <span id="initial-capital"></span> USD)
+          </h2>
+          <div id="chart-container" class="h-[400px]"></div>
+        </section>
+        <section class="mt-8">
+          <h2 class="text-xl font-semibold mb-4 text-slate-300">
+            Key Performance Indicators
+          </h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="border-b border-slate-300/20 text-slate-400">
+                <tr>
+                  <th class="py-3 px-4 font-medium">Metric</th>
+                  <th class="py-3 px-4 font-medium">Portfolio</th>
+                  <th class="py-3 px-4 font-medium">
+                    Benchmark (<span id="benchmark-ticker"></span>)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-slate-500/20">
+                  <td class="py-3 px-4 font-bold">Total Return</td>
+                  <td class="py-3 px-4 font-mono" id="metric-total-return">
+                    N/A
+                  </td>
+                  <td
+                    class="py-3 px-4 font-mono"
+                    id="metric-bench-total-return"
+                  >
+                    N/A
+                  </td>
+                </tr>
+                <tr class="border-b border-slate-500/20">
+                  <td class="py-3 px-4 font-bold">Annualized Return</td>
+                  <td class="py-3 px-4 font-mono" id="metric-annual-return">
+                    N/A
+                  </td>
+                  <td
+                    class="py-3 px-4 font-mono"
+                    id="metric-bench-annual-return"
+                  >
+                    N/A
+                  </td>
+                </tr>
+                <tr class="border-b border-slate-500/20">
+                  <td class="py-3 px-4 font-bold">Annualized Volatility</td>
+                  <td class="py-3 px-4 font-mono" id="metric-volatility">
+                    N/A
+                  </td>
+                  <td class="py-3 px-4 font-mono" id="metric-bench-volatility">
+                    N/A
+                  </td>
+                </tr>
+                <tr class="border-b border-slate-500/20">
+                  <td class="py-3 px-4 font-bold">Max Drawdown</td>
+                  <td
+                    class="py-3 px-4 font-mono text-red-400"
+                    id="metric-max-drawdown"
+                  >
+                    N/A
+                  </td>
+                  <td
+                    class="py-3 px-4 font-mono text-red-400"
+                    id="metric-bench-max-drawdown"
+                  >
+                    N/A
+                  </td>
+                </tr>
+                <tr class="border-b border-slate-500/20">
+                  <td class="py-3 px-4 font-bold">Sharpe Ratio</td>
+                  <td class="py-3 px-4 font-mono" id="metric-sharpe">N/A</td>
+                  <td class="py-3 px-4 font-mono" id="metric-bench-sharpe">
+                    N/A
+                  </td>
+                </tr>
+                <tr>
+                  <td class="py-3 px-4 font-bold">Sortino Ratio</td>
+                  <td class="py-3 px-4 font-mono" id="metric-sortino">N/A</td>
+                  <td class="py-3 px-4 font-mono" id="metric-bench-sortino">
+                    N/A
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+    <footer class="text-center text-xs text-slate-600 pb-4">
+      Powered by Python, QuantStats & GitHub Actions
+    </footer>
 
-                
-                const portfolioSeries = chart.addSeries(LightweightCharts.AreaSeries, {
-                    topColor: 'rgba(10, 178, 240, 0.5)', bottomColor: 'rgba(10, 178, 240, 0.01)',
-                    lineColor: '#0ab2f0', lineWidth: 2, crossHairMarkerVisible: false
-                });
-                const benchmarkSeries = chart.addSeries(LightweightCharts.AreaSeries, {
-                    topColor: 'rgba(168, 85, 247, 0.5)', bottomColor: 'rgba(168, 85, 247, 0.01)',
-                    lineColor: '#a855f7', lineWidth: 2, crossHairMarkerVisible: false
-                });
-                
-                portfolioSeries.setData([{'time': '2025-09-23', 'value': 10065.37}, {'time': '2025-09-24', 'value': 10082.51}, {'time': '2025-09-25', 'value': 10057.39}, {'time': '2025-09-26', 'value': 10058.67}, {'time': '2025-09-29', 'value': 10108.25}, {'time': '2025-09-30', 'value': 10133.29}, {'time': '2025-10-09', 'value': 10324.56}, {'time': '2025-10-10', 'value': 10314.75}, {'time': '2025-10-13', 'value': 10346.42}, {'time': '2025-10-14', 'value': 10372.74}]);
-                benchmarkSeries.setData([{'time': '2025-09-23', 'value': 9993.74}, {'time': '2025-09-24', 'value': 10096.1}, {'time': '2025-09-25', 'value': 10156.72}, {'time': '2025-09-26', 'value': 10060.68}, {'time': '2025-09-29', 'value': 10215.46}, {'time': '2025-09-30', 'value': 10261.1}, {'time': '2025-10-09', 'value': 10413.2}, {'time': '2025-10-10', 'value': 10208.34}, {'time': '2025-10-13', 'value': 10157.81}, {'time': '2025-10-14', 'value': 10036.38}]);
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        fetch("data.json", { cache: "no-store" }) // Use no-store to avoid caching of the data file
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const loadingState = document.getElementById("loading-state");
+            const reportContainer = document.getElementById("report-container");
 
-                const legend = document.createElement('div');
-                legend.style = `position: absolute; left: 12px; top: 12px; z-index: 10; font-family: sans-serif;`;
-                chartContainer.appendChild(legend);
-                const formatPrice = price => price.toLocaleString('zh-CN', {style: 'currency', currency: 'USD'});
-                const setLegendText = (pPrice, bPrice, date) => {
-                    legend.innerHTML = `<div class="text-slate-400 text-sm">${date}</div><div class="flex items-center mt-1"><div class="w-3 h-3 rounded-full bg-[#0ab2f0] mr-2"></div><span class="text-slate-300 mr-2 text-lg">Portfolio:</span><span class="font-bold text-xl text-[#0ab2f0]">${pPrice}</span></div><div class="flex items-center mt-1"><div class="w-3 h-3 rounded-full bg-[#a855f7] mr-2"></div><span class="text-slate-300 mr-2 text-lg">Benchmark:</span><span class="font-bold text-xl text-[#a855f7]">${bPrice}</span></div>`;
-                };
-                const updateLegend = param => {
-                    let pValue = 'N/A', bValue = 'N/A', date = '';
-                    const validCrosshairPoint = !(param === undefined || param.time === undefined || param.point.x < 0 || param.point.y < 0);
-                    if (validCrosshairPoint) {
-                        const pData = param.seriesData.get(portfolioSeries);
-                        const bData = param.seriesData.get(benchmarkSeries);
-                        pValue = pData ? formatPrice(pData.value) : 'N/A';
-                        bValue = bData ? formatPrice(bData.value) : 'N/A';
-                        date = param.time;
-                    } else {
-                        const portfolioData = [{'time': '2025-09-23', 'value': 10065.37}, {'time': '2025-09-24', 'value': 10082.51}, {'time': '2025-09-25', 'value': 10057.39}, {'time': '2025-09-26', 'value': 10058.67}, {'time': '2025-09-29', 'value': 10108.25}, {'time': '2025-09-30', 'value': 10133.29}, {'time': '2025-10-09', 'value': 10324.56}, {'time': '2025-10-10', 'value': 10314.75}, {'time': '2025-10-13', 'value': 10346.42}, {'time': '2025-10-14', 'value': 10372.74}]; const benchmarkData = [{'time': '2025-09-23', 'value': 9993.74}, {'time': '2025-09-24', 'value': 10096.1}, {'time': '2025-09-25', 'value': 10156.72}, {'time': '2025-09-26', 'value': 10060.68}, {'time': '2025-09-29', 'value': 10215.46}, {'time': '2025-09-30', 'value': 10261.1}, {'time': '2025-10-09', 'value': 10413.2}, {'time': '2025-10-10', 'value': 10208.34}, {'time': '2025-10-13', 'value': 10157.81}, {'time': '2025-10-14', 'value': 10036.38}];
-                        if (portfolioData.length > 0) {
-                           const lastPortfolioBar = portfolioData[portfolioData.length - 1];
-                           const lastBenchmarkBar = benchmarkData[benchmarkData.length - 1];
-                           pValue = formatPrice(lastPortfolioBar.value);
-                           bValue = formatPrice(lastBenchmarkBar.value);
-                           date = lastPortfolioBar.time;
-                        }
-                    }
-                    setLegendText(pValue, bValue, date);
-                };
-                chart.subscribeCrosshairMove(updateLegend);
-                updateLegend(undefined);
-                chart.timeScale().fitContent();
-                new ResizeObserver(entries => { if (entries.length === 0 || entries[0].target !== chartContainer) return; const newRect = entries[0].contentRect; chart.applyOptions({ width: newRect.width, height: newRect.height }); }).observe(chartContainer);
-            </script>
-        </body></html>
-        
+            if (data.status === "future") {
+              loadingState.innerHTML = `
+                            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Report will be generated in the future</h1>
+                            <p class="mt-4">The portfolio start date is set to ${data.startDate}.</p>
+                            <p class="mt-2">Please check back after this date for a detailed performance report.</p>
+                            <p class="text-xs text-slate-500 mt-6">Last checked: ${data.lastChecked}</p>
+                        `;
+            } else if (data.status === "success") {
+              populateReport(data);
+              loadingState.classList.add("hidden");
+              reportContainer.classList.remove("hidden");
+            } else {
+              throw new Error("Invalid data status received.");
+            }
+          })
+          .catch((error) => {
+            console.error("Failed to load portfolio data:", error);
+            const loadingState = document.getElementById("loading-state");
+            loadingState.innerHTML = `
+                        <h1 class="text-3xl font-bold text-red-500">Error Loading Report</h1>
+                        <p class="mt-4">Could not fetch the performance data. Please try again later.</p>
+                        <p class="text-xs text-slate-500 mt-6">${error.message}</p>
+                    `;
+          });
+      });
+
+      function populateReport(data) {
+        // --- Helper to format and color metrics ---
+        const setMetric = (
+          elementId,
+          value,
+          formatType = "percent",
+          positiveIsGood = true
+        ) => {
+          const el = document.getElementById(elementId);
+          if (!el) return;
+
+          let formattedValue;
+          if (formatType === "percent") {
+            formattedValue = (value * 100).toFixed(2) + "%";
+          } else if (formatType === "ratio") {
+            formattedValue = value.toFixed(2);
+          }
+          el.textContent = formattedValue;
+
+          if (value > 0) {
+            el.classList.add(
+              positiveIsGood ? "text-green-400" : "text-red-400"
+            );
+            el.classList.remove(
+              !positiveIsGood ? "text-green-400" : "text-red-400"
+            );
+          } else {
+            el.classList.add(
+              !positiveIsGood ? "text-green-400" : "text-red-400"
+            );
+            el.classList.remove(
+              positiveIsGood ? "text-green-400" : "text-red-400"
+            );
+          }
+        };
+
+        // --- Populate Header ---
+        document.getElementById("last-updated").textContent = data.lastUpdated;
+        document.getElementById("initial-capital").textContent =
+          data.initialCapital.toLocaleString("en-US");
+        document.getElementById("benchmark-ticker").textContent =
+          data.benchmarkTicker;
+
+        // --- Populate Metrics Table ---
+        const m = data.metrics;
+        setMetric("metric-total-return", m["Total Return"]);
+        setMetric("metric-bench-total-return", m["Benchmark Total Return"]);
+        setMetric("metric-annual-return", m["Annualized Return"]);
+        setMetric(
+          "metric-bench-annual-return",
+          m["Benchmark Annualized Return"]
+        );
+
+        document.getElementById("metric-volatility").textContent =
+          (m["Annualized Volatility"] * 100).toFixed(2) + "%";
+        document.getElementById("metric-bench-volatility").textContent =
+          (m["Benchmark Annualized Volatility"] * 100).toFixed(2) + "%";
+        document.getElementById("metric-max-drawdown").textContent =
+          (m["Max Drawdown"] * 100).toFixed(2) + "%";
+        document.getElementById("metric-bench-max-drawdown").textContent =
+          (m["Benchmark Max Drawdown"] * 100).toFixed(2) + "%";
+
+        setMetric("metric-sharpe", m["Sharpe Ratio"], "ratio");
+        setMetric("metric-bench-sharpe", m["Benchmark Sharpe Ratio"], "ratio");
+        setMetric("metric-sortino", m["Sortino Ratio"], "ratio");
+        setMetric(
+          "metric-bench-sortino",
+          m["Benchmark Sortino Ratio"],
+          "ratio"
+        );
+
+        // --- Populate Chart ---
+        renderChart(data.chartData);
+      }
+
+      function renderChart(chartData) {
+        const chartContainer = document.getElementById("chart-container");
+        const chart = LightweightCharts.createChart(chartContainer, {
+          layout: {
+            background: { color: "transparent" },
+            textColor: "#d1d5db",
+          },
+          grid: {
+            vertLines: { visible: false },
+            horzLines: { visible: false },
+          },
+          rightPriceScale: {
+            scaleMargins: { top: 0.1, bottom: 0.1 },
+            borderColor: "rgba(255, 255, 255, 0.2)",
+          },
+          timeScale: { borderColor: "rgba(255, 255, 255, 0.2)" },
+          crosshair: { horzLine: { visible: false, labelVisible: false } },
+        });
+
+        const portfolioSeries = chart.addSeries(LightweightCharts.AreaSeries, {
+          topColor: "rgba(10, 178, 240, 0.5)",
+          bottomColor: "rgba(10, 178, 240, 0.01)",
+          lineColor: "#0ab2f0",
+          lineWidth: 2,
+          crossHairMarkerVisible: false,
+        });
+        const benchmarkSeries = chart.addSeries(LightweightCharts.AreaSeries, {
+          topColor: "rgba(168, 85, 247, 0.5)",
+          bottomColor: "rgba(168, 85, 247, 0.01)",
+          lineColor: "#a855f7",
+          lineWidth: 2,
+          crossHairMarkerVisible: false,
+        });
+
+        portfolioSeries.setData(chartData.portfolio);
+        benchmarkSeries.setData(chartData.benchmark);
+
+        // Use ResizeObserver to ensure fitContent is called when the chart container is sized.
+        const resizeObserver = new ResizeObserver(() => {
+          chart.timeScale().fitContent();
+        });
+        resizeObserver.observe(chartContainer);
+
+        const legend = document.createElement("div");
+        legend.style = `position: absolute; left: 12px; top: 12px; z-index: 10; font-family: sans-serif; pointer-events: none;`;
+        chartContainer.appendChild(legend);
+        const formatPrice = (price) =>
+          price.toLocaleString("en-US", { style: "currency", currency: "USD" });
+
+        const setLegendText = (pPrice, bPrice, date) => {
+          legend.innerHTML = `
+                    <div class="text-slate-400 text-sm">${date}</div>
+                    <div class="flex items-center mt-1">
+                        <div class="w-3 h-3 rounded-full bg-[#0ab2f0] mr-2"></div>
+                        <span class="text-slate-300 mr-2 text-lg">Portfolio:</span>
+                        <span class="font-bold text-xl text-[#0ab2f0]">${pPrice}</span>
+                    </div>
+                    <div class="flex items-center mt-1">
+                        <div class="w-3 h-3 rounded-full bg-[#a855f7] mr-2"></div>
+                        <span class="text-slate-300 mr-2 text-lg">Benchmark:</span>
+                        <span class="font-bold text-xl text-[#a855f7]">${bPrice}</span>
+                    </div>
+                `;
+        };
+
+        const updateLegend = (param) => {
+          let pValue = "N/A",
+            bValue = "N/A",
+            date = "";
+          const validCrosshairPoint =
+            param && param.time && param.point.x >= 0 && param.point.y >= 0;
+
+          if (validCrosshairPoint && param.seriesData) {
+            const pData = param.seriesData.get(portfolioSeries);
+            const bData = param.seriesData.get(benchmarkSeries);
+            pValue = pData ? formatPrice(pData.value) : "N/A";
+            bValue = bData ? formatPrice(bData.value) : "N/A";
+            date = param.time;
+          } else {
+            const portfolioData = chartData.portfolio;
+            const benchmarkData = chartData.benchmark;
+            if (portfolioData.length > 0) {
+              const lastPortfolioBar = portfolioData[portfolioData.length - 1];
+              const lastBenchmarkBar = benchmarkData[benchmarkData.length - 1];
+              pValue = formatPrice(lastPortfolioBar.value);
+              bValue = formatPrice(lastBenchmarkBar.value);
+              date = lastPortfolioBar.time;
+            }
+          }
+          setLegendText(pValue, bValue, date);
+        };
+
+        chart.subscribeCrosshairMove(updateLegend);
+        updateLegend(null); // Initialize legend with the last value
+
+        new ResizeObserver((entries) => {
+          if (entries.length === 0 || entries[0].target !== chartContainer)
+            return;
+          const newRect = entries[0].contentRect;
+          chart.applyOptions({ width: newRect.width, height: newRect.height });
+        }).observe(chartContainer);
+      }
+    </script>
+  </body>
+</html>

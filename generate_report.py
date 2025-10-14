@@ -1,3 +1,5 @@
+# generate_report.py
+
 import os
 import requests
 import pandas as pd
@@ -6,34 +8,35 @@ import quantstats as qs
 import json
 import random
 import sys
-from datetime import datetime, timedelta, timezone # 导入 timezone
+from datetime import datetime, timedelta, timezone
 from playwright.sync_api import sync_playwright
+import threading
+import http.server
+import socketserver
 
 # --- 配置参数 ---
 
-API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY') if os.getenv('ALPHA_VANTAGE_API_KEY') else str(random.randint(114514, 1919810114514))
+API_KEY = os.getenv("ALPHAVANTAGE_API_KEY")
+if not API_KEY:
+    raise ValueError("ALPHAVANTAGE_API_KEY environment variable not set.")
 CACHE_DIR = "data_cache"
 TICKERS = ['513110.SHH', '518660.SHH', '159649.SHZ', '515450.SHH']
 BENCHMARK_TICKER = '000300.SHH'
 WEIGHTS = [0.25, 0.25, 0.25, 0.25]
 INITIAL_CAPITAL = 10000
-START_DATE = "2025-09-22" 
+START_DATE = "2025-09-22"
 RISK_FREE_RATE = 0.02
-OUTPUT_PNG_PATH = "./pages/portfolio_chart.png"
-OUTPUT_HTML_PATH = "./pages/index.html"
+OUTPUT_PNG_PATH = "pages/portfolio_chart.png"
+OUTPUT_HTML_PATH = "pages/index.html"
+OUTPUT_JSON_PATH = "pages/data.json"
 
-# --- 数据获取模块 ---
+
+# --- 数据获取模块 (保持不变) ---
 def fetch_data_from_api(ticker, output_size='full'):
-    """
-    从Alpha Vantage API获取数据。
-    :param ticker: 股票代码
-    :param output_size: 'full' 获取全部历史数据，'compact' (默认) 获取最近100个数据点。
-    """
     print(f"\n--- Attempting to fetch data for {ticker} from API (outputsize={output_size}) ---")
     url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={ticker}&apikey={API_KEY}'
     if output_size == 'full':
         url += '&outputsize=full'
-    
     print(f"Requesting URL: {url}")
     try:
         r = requests.get(url, timeout=30)
@@ -53,38 +56,28 @@ def fetch_data_from_api(ticker, output_size='full'):
         return None
 
 def get_data(ticker):
-    """
-    获取单个 Ticker 的数据，优先使用缓存，并实现增量更新逻辑。
-    """
+    # ... (代码不变)
     if not os.path.exists(CACHE_DIR):
         os.makedirs(CACHE_DIR)
     cache_path = os.path.join(CACHE_DIR, f"{ticker.replace('.', '_')}.csv")
-
     if os.path.exists(cache_path):
         try:
             cached_df = pd.read_csv(cache_path, index_col='date', parse_dates=True)
             if cached_df.empty:
                  raise ValueError("Cache file is empty.")
-
             last_cached_date = cached_df.index.max().date()
-            # 已修改: 使用 timezone-aware 的 datetime 对象
             today_utc8 = (datetime.now(timezone.utc) + timedelta(hours=8)).date()
-
             if last_cached_date >= today_utc8:
                 print(f"Cache for {ticker} is already up-to-date for today ({last_cached_date}). Skipping API call.")
                 return cached_df['close']
-            
             print(f"Cache for {ticker} is not current. Attempting incremental update.")
-            
             api_data_update = fetch_data_from_api(ticker, output_size='compact')
-
             if api_data_update is not None and not api_data_update.empty:
                 update_df = pd.DataFrame({'close': api_data_update})
                 update_df.index.name = 'date'
                 combined_df = pd.concat([cached_df, update_df])
                 combined_df = combined_df[~combined_df.index.duplicated(keep='first')]
                 combined_df.sort_index(inplace=True)
-                
                 combined_df.to_csv(cache_path)
                 print(f"Cache for {ticker} successfully updated.")
                 return combined_df['close']
@@ -94,7 +87,6 @@ def get_data(ticker):
         except Exception as e:
             print(f"Could not read or process cache file for {ticker}: {e}. Falling back to full fetch.")
             pass
-
     print(f"Cache not found for {ticker} or update failed. Performing full fetch.")
     api_data_full = fetch_data_from_api(ticker, output_size='full')
     if api_data_full is not None and not api_data_full.empty:
@@ -103,12 +95,10 @@ def get_data(ticker):
         df_to_save.to_csv(cache_path)
         print(f"Saved new full data for {ticker} to cache.")
         return api_data_full
-    
     print(f"CRITICAL: Failed to get any data for {ticker}.")
     return None
 
-
-# --- 回测模块 ---
+# --- 回测模块 (保持不变) ---
 def run_backtest(assets_data, benchmark_data):
     print("Running backtest..."); portfolio_data = pd.concat(assets_data, axis=1); portfolio_data.columns = TICKERS
     portfolio_data = portfolio_data.loc[START_DATE:]; portfolio_data = portfolio_data.ffill().bfill()
@@ -129,159 +119,126 @@ def run_backtest(assets_data, benchmark_data):
     benchmark_returns = benchmark_returns.loc[common_index]
     return portfolio_returns, benchmark_returns
 
-# --- HTML 报告生成模块 ---
-def generate_html_report(portfolio_returns=None, benchmark_returns=None, is_future=False):
-    print("Generating Web3-style HTML report with custom legend...")
+# --- JSON 数据生成模块 (保持不变) ---
+def generate_data_json(portfolio_returns=None, benchmark_returns=None, is_future=False):
+    print("Generating data.json...")
+    output_data = {}
     if is_future or portfolio_returns is None or portfolio_returns.empty:
-        html_content = f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Portfolio Report</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-900 text-slate-300 flex items-center justify-center min-h-screen"><div class="text-center p-8 bg-slate-800/50 rounded-lg backdrop-blur-sm ring-1 ring-white/10"><h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">报告将在未来生成</h1><p class="mt-4">投资组合的起始日期设置为 {START_DATE}。</p><p class="mt-2">请在该日期之后查看此页面以获取详细的性能报告。</p><p class="text-xs text-slate-500 mt-6">最后检查时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} UTC</p></div></body></html>"""
+        output_data = {
+            "status": "future",
+            "startDate": START_DATE,
+            "lastChecked": datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S') + " UTC"
+        }
     else:
         metrics = {
-            'Total Return': qs.stats.comp(portfolio_returns), 'Annualized Return': qs.stats.cagr(portfolio_returns),
-            'Annualized Volatility': qs.stats.volatility(portfolio_returns, periods=252), 'Max Drawdown': qs.stats.max_drawdown(portfolio_returns),
-            'Sharpe Ratio': qs.stats.sharpe(portfolio_returns, rf=RISK_FREE_RATE), 'Sortino Ratio': qs.stats.sortino(portfolio_returns, rf=RISK_FREE_RATE),
-            'Benchmark Total Return': qs.stats.comp(benchmark_returns), 'Benchmark Annualized Return': qs.stats.cagr(benchmark_returns),
-            'Benchmark Annualized Volatility': qs.stats.volatility(benchmark_returns, periods=252), 'Benchmark Max Drawdown': qs.stats.max_drawdown(benchmark_returns),
-            'Benchmark Sharpe Ratio': qs.stats.sharpe(benchmark_returns, rf=RISK_FREE_RATE), 'Benchmark Sortino Ratio': qs.stats.sortino(benchmark_returns, rf=RISK_FREE_RATE)
+            'Total Return': qs.stats.comp(portfolio_returns),
+            'Annualized Return': qs.stats.cagr(portfolio_returns),
+            'Annualized Volatility': qs.stats.volatility(portfolio_returns, periods=252),
+            'Max Drawdown': qs.stats.max_drawdown(portfolio_returns),
+            'Sharpe Ratio': qs.stats.sharpe(portfolio_returns, rf=RISK_FREE_RATE),
+            'Sortino Ratio': qs.stats.sortino(portfolio_returns, rf=RISK_FREE_RATE),
+            'Benchmark Total Return': qs.stats.comp(benchmark_returns),
+            'Benchmark Annualized Return': qs.stats.cagr(benchmark_returns),
+            'Benchmark Annualized Volatility': qs.stats.volatility(benchmark_returns, periods=252),
+            'Benchmark Max Drawdown': qs.stats.max_drawdown(benchmark_returns),
+            'Benchmark Sharpe Ratio': qs.stats.sharpe(benchmark_returns, rf=RISK_FREE_RATE),
+            'Benchmark Sortino Ratio': qs.stats.sortino(benchmark_returns, rf=RISK_FREE_RATE)
         }
-        
         
         portfolio_cumulative = (1 + portfolio_returns).cumprod() * INITIAL_CAPITAL
         benchmark_cumulative = (1 + benchmark_returns).cumprod() * INITIAL_CAPITAL
 
-
-        chart_data_portfolio = [{"time": str(date.date()), "value": round(value, 2)} for date, value in portfolio_cumulative.items()]
-        chart_data_benchmark = [{"time": str(date.date()), "value": round(value, 2)} for date, value in benchmark_cumulative.items()]
+        chart_data_portfolio = [{"time": date.strftime('%Y-%m-%d'), "value": round(value, 2)} for date, value in portfolio_cumulative.items()]
+        chart_data_benchmark = [{"time": date.strftime('%Y-%m-%d'), "value": round(value, 2)} for date, value in benchmark_cumulative.items()]
         
-        html_content = f"""
-        <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Portfolio Performance Dashboard</title>
-            <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-            <style>
-                body::before {{ content: ''; position: fixed; left: 0; top: 0; width: 100%; height: 100%; will-change: transform; background: radial-gradient(circle at 20% 20%, rgba(10, 178, 240, 0.2), transparent 30%), radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.2), transparent 30%); filter: blur(100px); z-index: -1; }}
-                #chart-container {{ position: relative; }}
-            </style>
-        </head>
-        <body class="bg-slate-900 text-slate-200 font-sans">
-            <main class="min-h-screen flex items-center justify-center p-4">
-                <div class="w-full max-w-4xl rounded-2xl bg-slate-800/50 p-6 md:p-8 shadow-2xl ring-1 ring-white/10 backdrop-blur-xl">
-                    <header class="mb-8"><h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Portfolio Dashboard</h1><p class="text-slate-400 text-sm mt-2">Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} UTC</p></header>
-                    <section><h2 class="text-xl font-semibold mb-4 text-slate-300">Performance Chart (Initial: {INITIAL_CAPITAL:,.0f} USD)</h2><div id="chart-container" class="h-[400px]"></div></section>
-                    <section class="mt-8"><h2 class="text-xl font-semibold mb-4 text-slate-300">Key Performance Indicators</h2><div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="border-b border-slate-300/20 text-slate-400"><tr><th class="py-3 px-4 font-medium">Metric</th><th class="py-3 px-4 font-medium">Portfolio</th><th class="py-3 px-4 font-medium">Benchmark (SH000300)</th></tr></thead>
-                        <tbody>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Total Return</td><td class="py-3 px-4 font-mono {'text-green-400' if metrics['Total Return'] > 0 else 'text-red-400'}">{metrics['Total Return']:.2%}</td><td class="py-3 px-4 font-mono {'text-green-400' if metrics['Benchmark Total Return'] > 0 else 'text-red-400'}">{metrics['Benchmark Total Return']:.2%}</td></tr>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Annualized Return</td><td class="py-3 px-4 font-mono {'text-green-400' if metrics['Annualized Return'] > 0 else 'text-red-400'}">{metrics['Annualized Return']:.2%}</td><td class="py-3 px-4 font-mono {'text-green-400' if metrics['Benchmark Annualized Return'] > 0 else 'text-red-400'}">{metrics['Benchmark Annualized Return']:.2%}</td></tr>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Annualized Volatility</td><td class="py-3 px-4 font-mono">{metrics['Annualized Volatility']:.2%}</td><td class="py-3 px-4 font-mono">{metrics['Benchmark Annualized Volatility']:.2%}</td></tr>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Max Drawdown</td><td class="py-3 px-4 font-mono text-red-400">{metrics['Max Drawdown']:.2%}</td><td class="py-3 px-4 font-mono text-red-400">{metrics['Benchmark Max Drawdown']:.2%}</td></tr>
-                            <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Sharpe Ratio</td><td class="py-3 px-4 font-mono {'text-green-400' if metrics['Sharpe Ratio'] > 0 else 'text-red-400'}">{metrics['Sharpe Ratio']:.2f}</td><td class="py-3 px-4 font-mono {'text-green-400' if metrics['Benchmark Sharpe Ratio'] > 0 else 'text-red-400'}">{metrics['Benchmark Sharpe Ratio']:.2f}</td></tr>
-                            <tr><td class="py-3 px-4 font-bold">Sortino Ratio</td><td class="py-3 px-4 font-mono {'text-green-400' if metrics['Sortino Ratio'] > 0 else 'text-red-400'}">{metrics['Sortino Ratio']:.2f}</td><td class="py-3 px-4 font-mono {'text-green-400' if metrics['Benchmark Sortino Ratio'] > 0 else 'text-red-400'}">{metrics['Benchmark Sortino Ratio']:.2f}</td></tr>
-                        </tbody></table></div></section>
-                </div>
-            </main>
-            <footer class="text-center text-xs text-slate-600 pb-4">Powered by Python, QuantStats & GitHub Actions</footer>
-            <script>
-                const chartContainer = document.getElementById('chart-container');
-                const chart = LightweightCharts.createChart(chartContainer, {{ 
-                    layout: {{  background: {{ color: 'transparent' }}, textColor: '#d1d5db' }}, 
-                    grid: {{ vertLines: {{ visible: false }}, horzLines: {{ visible: false }} }}, 
-                    rightPriceScale: {{ scaleMargins: {{ top: 0.1, bottom: 0.1 }}, borderColor: 'rgba(255, 255, 255, 0.2)' }}, 
-                    timeScale: {{ borderColor: 'rgba(255, 255, 255, 0.2)' }}, 
-                    crosshair: {{ horzLine: {{ visible: false, labelVisible: false }} }} 
-                }});
+        output_data = {
+            "status": "success",
+            "lastUpdated": datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S') + " UTC",
+            "initialCapital": INITIAL_CAPITAL,
+            "benchmarkTicker": BENCHMARK_TICKER.split('.')[0],
+            "metrics": metrics,
+            "chartData": {
+                "portfolio": chart_data_portfolio,
+                "benchmark": chart_data_benchmark
+            }
+        }
+    with open(OUTPUT_JSON_PATH, "w", encoding="utf-8") as f:
+        json.dump(output_data, f, ensure_ascii=False, indent=4)
+    print(f"Successfully generated {OUTPUT_JSON_PATH}")
 
-                
-                const portfolioSeries = chart.addSeries(LightweightCharts.AreaSeries, {{
-                    topColor: 'rgba(10, 178, 240, 0.5)', bottomColor: 'rgba(10, 178, 240, 0.01)',
-                    lineColor: '#0ab2f0', lineWidth: 2, crossHairMarkerVisible: false
-                }});
-                const benchmarkSeries = chart.addSeries(LightweightCharts.AreaSeries, {{
-                    topColor: 'rgba(168, 85, 247, 0.5)', bottomColor: 'rgba(168, 85, 247, 0.01)',
-                    lineColor: '#a855f7', lineWidth: 2, crossHairMarkerVisible: false
-                }});
-                
-                portfolioSeries.setData({str(chart_data_portfolio)});
-                benchmarkSeries.setData({str(chart_data_benchmark)});
-
-                const legend = document.createElement('div');
-                legend.style = `position: absolute; left: 12px; top: 12px; z-index: 10; font-family: sans-serif;`;
-                chartContainer.appendChild(legend);
-                const formatPrice = price => price.toLocaleString('zh-CN', {{style: 'currency', currency: 'USD'}});
-                const setLegendText = (pPrice, bPrice, date) => {{
-                    legend.innerHTML = `<div class="text-slate-400 text-sm">${{date}}</div><div class="flex items-center mt-1"><div class="w-3 h-3 rounded-full bg-[#0ab2f0] mr-2"></div><span class="text-slate-300 mr-2 text-lg">Portfolio:</span><span class="font-bold text-xl text-[#0ab2f0]">${{pPrice}}</span></div><div class="flex items-center mt-1"><div class="w-3 h-3 rounded-full bg-[#a855f7] mr-2"></div><span class="text-slate-300 mr-2 text-lg">Benchmark:</span><span class="font-bold text-xl text-[#a855f7]">${{bPrice}}</span></div>`;
-                }};
-                const updateLegend = param => {{
-                    let pValue = 'N/A', bValue = 'N/A', date = '';
-                    const validCrosshairPoint = !(param === undefined || param.time === undefined || param.point.x < 0 || param.point.y < 0);
-                    if (validCrosshairPoint) {{
-                        const pData = param.seriesData.get(portfolioSeries);
-                        const bData = param.seriesData.get(benchmarkSeries);
-                        pValue = pData ? formatPrice(pData.value) : 'N/A';
-                        bValue = bData ? formatPrice(bData.value) : 'N/A';
-                        date = param.time;
-                    }} else {{
-                        const portfolioData = {str(chart_data_portfolio)}; const benchmarkData = {str(chart_data_benchmark)};
-                        if (portfolioData.length > 0) {{
-                           const lastPortfolioBar = portfolioData[portfolioData.length - 1];
-                           const lastBenchmarkBar = benchmarkData[benchmarkData.length - 1];
-                           pValue = formatPrice(lastPortfolioBar.value);
-                           bValue = formatPrice(lastBenchmarkBar.value);
-                           date = lastPortfolioBar.time;
-                        }}
-                    }}
-                    setLegendText(pValue, bValue, date);
-                }};
-                chart.subscribeCrosshairMove(updateLegend);
-                updateLegend(undefined);
-                chart.timeScale().fitContent();
-                new ResizeObserver(entries => {{ if (entries.length === 0 || entries[0].target !== chartContainer) return; const newRect = entries[0].contentRect; chart.applyOptions({{ width: newRect.width, height: newRect.height }}); }}).observe(chartContainer);
-            </script>
-        </body></html>
-        """
-    with open(OUTPUT_HTML_PATH, "w", encoding="utf-8") as f: f.write(html_content)
-    print("Report 'index.html' generated successfully.")
-
-# --- PNG 生成函数 ---
+# --- PNG 生成函数 (完全替换为这个新版本) ---
 def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH):
-    """使用Playwright对本地HTML文件中的图表进行截图"""
+    """通过启动本地服务器并使用Playwright访问来对图表进行截图"""
     print(f"Starting PNG generation from {html_path}...")
+    os.makedirs(os.path.dirname(png_path), exist_ok=True)
+    
+    PORT = 8008 # Use an uncommon port number
+    # SimpleHTTPRequestHandler 会自动寻找当前目录下的文件
+    Handler = http.server.SimpleHTTPRequestHandler
+    
+    # 我们需要在项目根目录运行服务器，所以暂时切换目录
+    current_dir = os.getcwd()
+    # 假设你的 pages 目录在项目根目录下
+    # os.chdir(os.path.dirname(html_path))
+    # 更新：更好的方法是不切换目录，直接从根目录访问
+    
+    httpd = socketserver.TCPServer(("", PORT), Handler)
+    
+    # 启动一个后台线程来运行服务器
+    server_thread = threading.Thread(target=httpd.serve_forever)
+    server_thread.daemon = True  # 确保主线程退出时，这个线程也会退出
+    server_thread.start()
+    print(f"Local server started at http://localhost:{PORT}")
+    
+    success = False
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch()
-            context = browser.new_context(
-            viewport={"width": 1920, "height": 1080},
-            device_scale_factor=3
-        )
-            page = browser.new_page()
-            absolute_html_path = os.path.abspath(html_path)
-            page.goto(f'file://{absolute_html_path}')
-            page.wait_for_load_state('networkidle') 
-            page.wait_for_timeout(2000)
+            page = browser.new_page(
+                viewport={"width": 1024, "height": 768},
+                device_scale_factor=2 # 提高截图清晰度
+            )
+            # 访问由本地服务器提供的页面
+            # html_path 已经是 'pages/index.html'
+            page_url = f'http://localhost:{PORT}/{html_path}'
+            print(f"Playwright going to: {page_url}")
+            page.goto(page_url, wait_until='networkidle')
+            
+            # 等待图表容器元素出现
             chart_element = page.locator('#chart-container')
+            chart_element.wait_for(state='visible', timeout=10000) # 等待图表完全加载
+            
+            page.wait_for_timeout(3000) # 额外等待5秒，确保图表完全加载 
+            print("Taking screenshot...")
             chart_element.screenshot(path=png_path)
             browser.close()
             print(f"Successfully generated PNG: {png_path}")
-            return True
+            success = True
     except Exception as e:
         print(f"Error during PNG generation: {e}")
-        return False
-    
-# --- 主执行逻辑 ---
+        success = False
+    finally:
+        # 无论成功与否，都关闭服务器
+        print("Shutting down local server...")
+        httpd.shutdown()
+        httpd.server_close()
+        # os.chdir(current_dir) # 切换回原来的目录
+        print("Server stopped.")
+        
+    return success
+
+# --- 主执行逻辑 (保持不变) ---
 if __name__ == "__main__":
-    # 已修改: 使用 timezone-aware 的 datetime 对象
     current_utc = datetime.now(timezone.utc)
     utc_plus_8_time = current_utc + timedelta(hours=8)
-
     if not (19 <= utc_plus_8_time.hour < 23):
         print(f"Execution stopped. Current time {utc_plus_8_time.strftime('%Y-%m-%d %H:%M:%S')} UTC+8 is outside the allowed window (19:00 - 23:00).")
         sys.exit()
-    
     print(f"Current time {utc_plus_8_time.strftime('%Y-%m-%d %H:%M:%S')} UTC+8 is within the allowed window. Starting process...")
-
     if not API_KEY or API_KEY == "YOUR_API_KEY_HERE": 
         raise ValueError("Alpha Vantage API Key not found. Please set it as an environment variable.")
-    
     all_tickers = TICKERS + [BENCHMARK_TICKER]
     all_data = {ticker: get_data(ticker) for ticker in all_tickers}
-    
     if any(data is None for data in all_data.values()): 
         print("\nCritical Error: Failed to get data for one or more tickers.")
     else:
@@ -293,10 +250,12 @@ if __name__ == "__main__":
             print("Backtest completed successfully.")
         except Exception as e:
             print(f"Error during backtest: {e}")
-        
         if portfolio_returns is None or portfolio_returns.empty:
             print("Backtest resulted in no data, likely because start date is in the future.")
-            generate_html_report(is_future=True)
+            generate_data_json(is_future=True)
         else:
-            generate_html_report(portfolio_returns, benchmark_returns)
-            generate_png_from_html()
+            generate_data_json(portfolio_returns, benchmark_returns)
+            if os.path.exists(OUTPUT_HTML_PATH):
+                generate_png_from_html()
+            else:
+                print(f"Warning: {OUTPUT_HTML_PATH} not found. Skipping PNG generation.")
