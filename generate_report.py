@@ -33,7 +33,6 @@ OUTPUT_JSON_PATH = "pages/data.json"
 
 # --- 数据获取模块 (保持不变) ---
 def fetch_data_from_api(ticker, output_size='full'):
-    # ... (代码不变)
     print(f"\n--- Attempting to fetch data for {ticker} from API (outputsize={output_size}) ---")
     url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={ticker}&apikey={API_KEY}'
     if output_size == 'full':
