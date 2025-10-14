@@ -177,10 +177,10 @@
 
             if (data.status === "future") {
               loadingState.innerHTML = `
-                            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">报告将在未来生成</h1>
-                            <p class="mt-4">投资组合的起始日期设置为 ${data.startDate}。</p>
-                            <p class="mt-2">请在该日期之后查看此页面以获取详细的性能报告。</p>
-                            <p class="text-xs text-slate-500 mt-6">最后检查时间: ${data.lastChecked}</p>
+                            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Report will be generated in the future</h1>
+                            <p class="mt-4">The portfolio start date is set to ${data.startDate}.</p>
+                            <p class="mt-2">Please check back after this date for a detailed performance report.</p>
+                            <p class="text-xs text-slate-500 mt-6">Last checked: ${data.lastChecked}</p>
                         `;
             } else if (data.status === "success") {
               populateReport(data);
