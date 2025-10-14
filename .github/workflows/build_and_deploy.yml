@@ -3,7 +3,10 @@ name: Build and Deploy Portfolio Dashboard
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 11 * * *' # 每天 UTC 时间 11:00 运行
+    - cron: '0 11 * * *'
+    - cron: '0 0 * * *'
+  #push:
+  #  branches: [ "main", "master" ]
 
 permissions:
   contents: write
@@ -15,61 +18,74 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  generate-report:
+  build:
     runs-on: ubuntu-latest
-    
-    # 使用你在 GHCR 上的预构建容器作为此作业的运行环境
-    container:
-      image: ghcr.io/HYwooo/portfolio-reporter:latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Cache data directory
         uses: actions/cache@v4
         with:
-          # 容器内的代码检出路径是 /github/workspace
-          path: /github/workspace/data_cache
+          path: data_cache
           key: ${{ runner.os }}-data-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-data-
 
-      - name: Run Python script to generate report
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      # --- 新增步骤: 安装 Playwright 浏览器 ---
+      - name: Install Playwright Browsers
+        run: playwright install --with-deps
+      
+      - name: Run Python script to generate report and PNG
         env:
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
-        # 这个命令在上面定义的 container 内部执行
         run: python generate_report.py
         
-      - name: Commit and push generated files
+      - name: Commit and push if changed
         run: |
-          # 配置 git
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          # 因为容器的用户与仓库的所有者不同，需要将工作目录标记为安全
-          git config --global --add safe.directory /github/workspace
           
-          # 添加所有生成的文件和缓存
-          git add pages/ data_cache/
-          
-          # 检查是否有变动，如果有则提交并推送
-          if ! git diff --staged --quiet; then
-            git commit -m "ci: Update report and data cache"
+          # 注意：检查文件是否存在
+          if [ -f ./pages/index.html ]; then
+            git add ./pages/index.html
+            git diff --staged --quiet || git commit -m "ci: Update portfolio dashboard."
             git push
           else
-            echo "No changes to commit."
+            echo "./pages/index.html not found, skipping commit."
           fi
+          # 同时处理可能的截图
+          if [ -f ./pages/portfolio_chart.png ]; then
+            git add ./pages/portfolio_chart.png
+            git diff --staged --quiet || git commit -m "ci: Update portfolio screenshot."
+            git push
+          fi
+          git add *
+          git diff --staged --quiet || git commit -m "ci: Update csv files or other files."
+          git push
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # --- 修改: 上传所有生成的文件 (HTML 和 PNG) ---
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
+          # 上传整个仓库的内容
           path: './pages'
 
   deploy:
-    needs: generate-report
+    needs: build
     permissions:
       pages: write
       id-token: write
