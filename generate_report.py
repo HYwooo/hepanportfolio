@@ -123,7 +123,6 @@ def run_backtest(assets_data, benchmark_data):
 
 # --- JSON 数据生成模块 (保持不变) ---
 def generate_data_json(portfolio_returns=None, benchmark_returns=None, is_future=False):
-    # ... (代码不变)
     print("Generating data.json...")
     output_data = {}
     if is_future or portfolio_returns is None or portfolio_returns.empty:
