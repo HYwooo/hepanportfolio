@@ -17,7 +17,7 @@ from zoneinfo import ZoneInfo # 新增导入，用于处理时区
 
 # --- 配置参数 ---
 
-API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
+API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY") if os.getenv("ALPHA_VANTAGE_API_KEY") else "114514"
 if not API_KEY:
     raise ValueError("ALPHA_VANTAGE_API_KEY environment variable not set.")
 CACHE_DIR = "data_cache"
@@ -218,7 +218,7 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
             chart_element = page.locator('#chart-container')
             chart_element.wait_for(state='visible', timeout=10000)
             
-            page.wait_for_timeout(3000)
+            page.wait_for_timeout(10000)
             print("Taking screenshot...")
             chart_element.screenshot(path=png_path)
             browser.close()
