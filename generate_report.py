@@ -5,56 +5,110 @@ import numpy as np
 import quantstats as qs
 import json
 import random
-from datetime import datetime
+import sys
+from datetime import datetime, timedelta, timezone # 导入 timezone
 from playwright.sync_api import sync_playwright
 
 # --- 配置参数 ---
-API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY') if os.getenv('ALPHA_VANTAGE_API_KEY') else str(random.randint(114514, 1919810114514))  # 请在环境变量中设置您的Alpha Vantage API Key
+
+API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY') if os.getenv('ALPHA_VANTAGE_API_KEY') else str(random.randint(114514, 1919810114514))
 CACHE_DIR = "data_cache"
 TICKERS = ['513110.SHH', '518660.SHH', '159649.SHZ', '515450.SHH']
-BENCHMARK_TICKER = '510300.SHH'
+BENCHMARK_TICKER = '000300.SHH'
 WEIGHTS = [0.25, 0.25, 0.25, 0.25]
 INITIAL_CAPITAL = 10000
 START_DATE = "2025-09-22" 
 RISK_FREE_RATE = 0.02
-OUTPUT_PNG_PATH = "./pages/portfolio_chart.png" # 定义输出PNG的文件名
-OUTPUT_HTML_PATH = "./pages/index.html" # 定义输出HTML的文件名
+OUTPUT_PNG_PATH = "./pages/portfolio_chart.png"
+OUTPUT_HTML_PATH = "./pages/index.html"
 
 # --- 数据获取模块 ---
-def fetch_data_from_api(ticker):
-    print(f"\n--- Attempting to fetch data for {ticker} from API ---")
-    url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={ticker}&outputsize=full&apikey={API_KEY}'
+def fetch_data_from_api(ticker, output_size='full'):
+    """
+    从Alpha Vantage API获取数据。
+    :param ticker: 股票代码
+    :param output_size: 'full' 获取全部历史数据，'compact' (默认) 获取最近100个数据点。
+    """
+    print(f"\n--- Attempting to fetch data for {ticker} from API (outputsize={output_size}) ---")
+    url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={ticker}&apikey={API_KEY}'
+    if output_size == 'full':
+        url += '&outputsize=full'
+    
     print(f"Requesting URL: {url}")
     try:
-        r = requests.get(url, timeout=30); r.raise_for_status(); data = r.json()
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        data = r.json()
         if "Time Series (Daily)" not in data or not data["Time Series (Daily)"]:
-            print(f"ERROR: 'Time Series (Daily)' not found in response for {ticker}."); print("Full API Response:", json.dumps(data, indent=2)); return None
-        df = pd.DataFrame.from_dict(data['Time Series (Daily)'], orient='index'); df = df.astype(float); df.index = pd.to_datetime(df.index)
+            print(f"ERROR: 'Time Series (Daily)' not found in response for {ticker}.")
+            print("Full API Response:", json.dumps(data, indent=2))
+            return None
+        df = pd.DataFrame.from_dict(data['Time Series (Daily)'], orient='index')
+        df = df.astype(float)
+        df.index = pd.to_datetime(df.index)
         print(f"Successfully fetched {len(df)} data points for {ticker}.")
         return df['4. close'].sort_index()
     except Exception as e:
-        print(f"Request failed for {ticker}: {e}"); return None
+        print(f"Request failed for {ticker}: {e}")
+        return None
 
 def get_data(ticker):
-    if not os.path.exists(CACHE_DIR): os.makedirs(CACHE_DIR)
+    """
+    获取单个 Ticker 的数据，优先使用缓存，并实现增量更新逻辑。
+    """
+    if not os.path.exists(CACHE_DIR):
+        os.makedirs(CACHE_DIR)
     cache_path = os.path.join(CACHE_DIR, f"{ticker.replace('.', '_')}.csv")
-    print(f"Cache path for csv: {cache_path} .")
+
     if os.path.exists(cache_path):
         try:
             cached_df = pd.read_csv(cache_path, index_col='date', parse_dates=True)
-            if not cached_df.empty and (datetime.now().date() == cached_df.index.max().date()):
-                print(f"Using up-to-date cache for {ticker}."); return cached_df['close']
+            if cached_df.empty:
+                 raise ValueError("Cache file is empty.")
+
+            last_cached_date = cached_df.index.max().date()
+            # 已修改: 使用 timezone-aware 的 datetime 对象
+            today_utc8 = (datetime.now(timezone.utc) + timedelta(hours=8)).date()
+
+            if last_cached_date >= today_utc8:
+                print(f"Cache for {ticker} is already up-to-date for today ({last_cached_date}). Skipping API call.")
+                return cached_df['close']
+            
+            print(f"Cache for {ticker} is not current. Attempting incremental update.")
+            
+            api_data_update = fetch_data_from_api(ticker, output_size='compact')
+
+            if api_data_update is not None and not api_data_update.empty:
+                update_df = pd.DataFrame({'close': api_data_update})
+                update_df.index.name = 'date'
+                combined_df = pd.concat([cached_df, update_df])
+                combined_df = combined_df[~combined_df.index.duplicated(keep='first')]
+                combined_df.sort_index(inplace=True)
+                
+                combined_df.to_csv(cache_path)
+                print(f"Cache for {ticker} successfully updated.")
+                return combined_df['close']
+            else:
+                print(f"API update failed for {ticker}. Using stale cache as fallback.")
+                return cached_df['close']
         except Exception as e:
-            print(f"Could not read cache file for {ticker}: {e}")
-    api_data = fetch_data_from_api(ticker)
-    if api_data is not None and not api_data.empty:
-        df_to_save = pd.DataFrame({'close': api_data}); df_to_save.index.name = 'date'; df_to_save.to_csv(cache_path)
-        print(f"Saved new data for {ticker} to cache."); return api_data
-    if os.path.exists(cache_path):
-        print(f"API fetch failed for {ticker}. Using stale cache as fallback."); return pd.read_csv(cache_path, index_col='date', parse_dates=True)['close']
+            print(f"Could not read or process cache file for {ticker}: {e}. Falling back to full fetch.")
+            pass
+
+    print(f"Cache not found for {ticker} or update failed. Performing full fetch.")
+    api_data_full = fetch_data_from_api(ticker, output_size='full')
+    if api_data_full is not None and not api_data_full.empty:
+        df_to_save = pd.DataFrame({'close': api_data_full})
+        df_to_save.index.name = 'date'
+        df_to_save.to_csv(cache_path)
+        print(f"Saved new full data for {ticker} to cache.")
+        return api_data_full
+    
+    print(f"CRITICAL: Failed to get any data for {ticker}.")
     return None
 
-# --- 回测模块 (已修正日期对齐) ---
+
+# --- 回测模块 ---
 def run_backtest(assets_data, benchmark_data):
     print("Running backtest..."); portfolio_data = pd.concat(assets_data, axis=1); portfolio_data.columns = TICKERS
     portfolio_data = portfolio_data.loc[START_DATE:]; portfolio_data = portfolio_data.ffill().bfill()
@@ -75,7 +129,7 @@ def run_backtest(assets_data, benchmark_data):
     benchmark_returns = benchmark_returns.loc[common_index]
     return portfolio_returns, benchmark_returns
 
-# --- HTML 报告生成模块 (已最终修正 JS 调用 和 指标) ---
+# --- HTML 报告生成模块 ---
 def generate_html_report(portfolio_returns=None, benchmark_returns=None, is_future=False):
     print("Generating Web3-style HTML report with custom legend...")
     if is_future or portfolio_returns is None or portfolio_returns.empty:
@@ -185,7 +239,7 @@ def generate_html_report(portfolio_returns=None, benchmark_returns=None, is_futu
     with open(OUTPUT_HTML_PATH, "w", encoding="utf-8") as f: f.write(html_content)
     print("Report 'index.html' generated successfully.")
 
-# --- 新增: PNG 生成函数 ---
+# --- PNG 生成函数 ---
 def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH):
     """使用Playwright对本地HTML文件中的图表进行截图"""
     print(f"Starting PNG generation from {html_path}...")
@@ -194,24 +248,15 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
             browser = p.chromium.launch()
             context = browser.new_context(
             viewport={"width": 1920, "height": 1080},
-            device_scale_factor=3  # 3倍DPI缩放，显著提高清晰度
+            device_scale_factor=3
         )
             page = browser.new_page()
-
-            # 使用 file:// 协议访问本地 HTML 文件
             absolute_html_path = os.path.abspath(html_path)
             page.goto(f'file://{absolute_html_path}')
-            
-            # 等待JavaScript渲染图表 (重要!)
-            # 给予2秒的固定等待时间，确保图表动画和数据加载完成
             page.wait_for_load_state('networkidle') 
-            page.wait_for_timeout(2000)  # 额外等待确保图表渲染完成
-            # 定位到图表所在的div容器
+            page.wait_for_timeout(2000)
             chart_element = page.locator('#chart-container')
-            
-            # 对该元素进行截图
             chart_element.screenshot(path=png_path)
-            
             browser.close()
             print(f"Successfully generated PNG: {png_path}")
             return True
@@ -221,16 +266,37 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
     
 # --- 主执行逻辑 ---
 if __name__ == "__main__":
-    if not API_KEY or API_KEY == "YOUR_API_KEY_HERE": raise ValueError("Alpha Vantage API Key not found. Please set it as an environment variable.")
-    all_tickers = TICKERS + [BENCHMARK_TICKER]; all_data = {ticker: get_data(ticker) for ticker in all_tickers}
-    if any(data is None for data in all_data.values()): print("\nCritical Error: Failed to get data.")
+    # 已修改: 使用 timezone-aware 的 datetime 对象
+    current_utc = datetime.now(timezone.utc)
+    utc_plus_8_time = current_utc + timedelta(hours=8)
+
+    if not (19 <= utc_plus_8_time.hour < 23):
+        print(f"Execution stopped. Current time {utc_plus_8_time.strftime('%Y-%m-%d %H:%M:%S')} UTC+8 is outside the allowed window (19:00 - 23:00).")
+        sys.exit()
+    
+    print(f"Current time {utc_plus_8_time.strftime('%Y-%m-%d %H:%M:%S')} UTC+8 is within the allowed window. Starting process...")
+
+    if not API_KEY or API_KEY == "YOUR_API_KEY_HERE": 
+        raise ValueError("Alpha Vantage API Key not found. Please set it as an environment variable.")
+    
+    all_tickers = TICKERS + [BENCHMARK_TICKER]
+    all_data = {ticker: get_data(ticker) for ticker in all_tickers}
+    
+    if any(data is None for data in all_data.values()): 
+        print("\nCritical Error: Failed to get data for one or more tickers.")
     else:
-        assets_data = [all_data[ticker] for ticker in TICKERS]; benchmark_data = all_data[BENCHMARK_TICKER]
-        portfolio_returns, benchmark_returns = run_backtest(assets_data, benchmark_data)
+        assets_data = [all_data[ticker] for ticker in TICKERS]
+        benchmark_data = all_data[BENCHMARK_TICKER]
+        portfolio_returns, benchmark_returns = None, None
+        try:
+            portfolio_returns, benchmark_returns = run_backtest(assets_data, benchmark_data)
+            print("Backtest completed successfully.")
+        except Exception as e:
+            print(f"Error during backtest: {e}")
+        
         if portfolio_returns is None or portfolio_returns.empty:
             print("Backtest resulted in no data, likely because start date is in the future.")
             generate_html_report(is_future=True)
         else:
             generate_html_report(portfolio_returns, benchmark_returns)
-            # 在生成HTML报告成功后，调用截图函数
             generate_png_from_html()
