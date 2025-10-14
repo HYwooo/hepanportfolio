@@ -175,7 +175,7 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
     print(f"Starting PNG generation from {html_path}...")
     os.makedirs(os.path.dirname(png_path), exist_ok=True)
     
-    PORT = 8008 # 随便选一个不常用的端口
+    PORT = 8008 # Use an uncommon port number
     # SimpleHTTPRequestHandler 会自动寻找当前目录下的文件
     Handler = http.server.SimpleHTTPRequestHandler
     
