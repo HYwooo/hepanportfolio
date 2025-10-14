@@ -4,19 +4,21 @@ import pandas as pd
 import numpy as np
 import quantstats as qs
 import json
+import random
 from datetime import datetime
 from playwright.sync_api import sync_playwright
 
 # --- 配置参数 ---
-API_KEY = "114514"#os.getenv('ALPHA_VANTAGE_API_KEY') 
+API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY') if os.getenv('ALPHA_VANTAGE_API_KEY') else str(random.randint(114514, 1919810114514))  # 请在环境变量中设置您的Alpha Vantage API Key
 CACHE_DIR = "data_cache"
 TICKERS = ['513110.SHH', '518660.SHH', '159649.SHZ', '515450.SHH']
 BENCHMARK_TICKER = '000300.SHH'
 WEIGHTS = [0.25, 0.25, 0.25, 0.25]
 INITIAL_CAPITAL = 10000
-START_DATE = "2025-09-23" 
+START_DATE = "2025-09-22" 
 RISK_FREE_RATE = 0.02
-OUTPUT_PNG_PATH = "portfolio_chart.png" # 定义输出PNG的文件名
+OUTPUT_PNG_PATH = "./pages/portfolio_chart.png" # 定义输出PNG的文件名
+OUTPUT_HTML_PATH = "./pages/index.html" # 定义输出HTML的文件名
 
 # --- 数据获取模块 ---
 def fetch_data_from_api(ticker):
@@ -86,10 +88,15 @@ def generate_html_report(portfolio_returns=None, benchmark_returns=None, is_futu
             'Benchmark Annualized Volatility': qs.stats.volatility(benchmark_returns, periods=252), 'Benchmark Max Drawdown': qs.stats.max_drawdown(benchmark_returns),
             'Benchmark Sharpe Ratio': qs.stats.sharpe(benchmark_returns, rf=RISK_FREE_RATE), 'Benchmark Sortino Ratio': qs.stats.sortino(benchmark_returns, rf=RISK_FREE_RATE)
         }
+        
+        
         portfolio_cumulative = (1 + portfolio_returns).cumprod() * INITIAL_CAPITAL
         benchmark_cumulative = (1 + benchmark_returns).cumprod() * INITIAL_CAPITAL
+
+
         chart_data_portfolio = [{"time": str(date.date()), "value": round(value, 2)} for date, value in portfolio_cumulative.items()]
         chart_data_benchmark = [{"time": str(date.date()), "value": round(value, 2)} for date, value in benchmark_cumulative.items()]
+        
         html_content = f"""
         <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Portfolio Performance Dashboard</title>
@@ -103,7 +110,7 @@ def generate_html_report(portfolio_returns=None, benchmark_returns=None, is_futu
             <main class="min-h-screen flex items-center justify-center p-4">
                 <div class="w-full max-w-4xl rounded-2xl bg-slate-800/50 p-6 md:p-8 shadow-2xl ring-1 ring-white/10 backdrop-blur-xl">
                     <header class="mb-8"><h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Portfolio Dashboard</h1><p class="text-slate-400 text-sm mt-2">Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} UTC</p></header>
-                    <section><h2 class="text-xl font-semibold mb-4 text-slate-300">Performance Chart (Initial: {INITIAL_CAPITAL:,.0f} CNY)</h2><div id="chart-container" class="h-[400px]"></div></section>
+                    <section><h2 class="text-xl font-semibold mb-4 text-slate-300">Performance Chart (Initial: {INITIAL_CAPITAL:,.0f} USD)</h2><div id="chart-container" class="h-[400px]"></div></section>
                     <section class="mt-8"><h2 class="text-xl font-semibold mb-4 text-slate-300">Key Performance Indicators</h2><div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="border-b border-slate-300/20 text-slate-400"><tr><th class="py-3 px-4 font-medium">Metric</th><th class="py-3 px-4 font-medium">Portfolio</th><th class="py-3 px-4 font-medium">Benchmark (SH000300)</th></tr></thead>
                         <tbody>
                             <tr class="border-b border-slate-500/20"><td class="py-3 px-4 font-bold">Total Return</td><td class="py-3 px-4 font-mono {'text-green-400' if metrics['Total Return'] > 0 else 'text-red-400'}">{metrics['Total Return']:.2%}</td><td class="py-3 px-4 font-mono {'text-green-400' if metrics['Benchmark Total Return'] > 0 else 'text-red-400'}">{metrics['Benchmark Total Return']:.2%}</td></tr>
@@ -142,7 +149,7 @@ def generate_html_report(portfolio_returns=None, benchmark_returns=None, is_futu
                 const legend = document.createElement('div');
                 legend.style = `position: absolute; left: 12px; top: 12px; z-index: 10; font-family: sans-serif;`;
                 chartContainer.appendChild(legend);
-                const formatPrice = price => price.toLocaleString('zh-CN', {{style: 'currency', currency: 'CNY'}});
+                const formatPrice = price => price.toLocaleString('zh-CN', {{style: 'currency', currency: 'USD'}});
                 const setLegendText = (pPrice, bPrice, date) => {{
                     legend.innerHTML = `<div class="text-slate-400 text-sm">${{date}}</div><div class="flex items-center mt-1"><div class="w-3 h-3 rounded-full bg-[#0ab2f0] mr-2"></div><span class="text-slate-300 mr-2 text-lg">Portfolio:</span><span class="font-bold text-xl text-[#0ab2f0]">${{pPrice}}</span></div><div class="flex items-center mt-1"><div class="w-3 h-3 rounded-full bg-[#a855f7] mr-2"></div><span class="text-slate-300 mr-2 text-lg">Benchmark:</span><span class="font-bold text-xl text-[#a855f7]">${{bPrice}}</span></div>`;
                 }};
@@ -174,11 +181,11 @@ def generate_html_report(portfolio_returns=None, benchmark_returns=None, is_futu
             </script>
         </body></html>
         """
-    with open("index.html", "w", encoding="utf-8") as f: f.write(html_content)
+    with open(OUTPUT_HTML_PATH, "w", encoding="utf-8") as f: f.write(html_content)
     print("Report 'index.html' generated successfully.")
 
 # --- 新增: PNG 生成函数 ---
-def generate_png_from_html(html_path="index.html", png_path=OUTPUT_PNG_PATH):
+def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH):
     """使用Playwright对本地HTML文件中的图表进行截图"""
     print(f"Starting PNG generation from {html_path}...")
     try:

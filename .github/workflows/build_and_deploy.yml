@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 8 * * *'
-  push:
-    branches: [ "main", "master" ]
+  #push:
+  #  branches: [ "main", "master" ]
 
 permissions:
   contents: read
@@ -23,10 +23,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.12'
 
       - name: Cache data directory
         uses: actions/cache@v4
@@ -58,7 +58,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # 上传整个仓库的内容
-          path: '.'
+          path: './pages'
 
   deploy:
     needs: build
