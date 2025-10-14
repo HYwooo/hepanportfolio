@@ -164,7 +164,7 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        fetch("/data.json", { cache: "no-store" }) // Use no-store to avoid caching of the data file
+        fetch("data.json", { cache: "no-store" }) // Use no-store to avoid caching of the data file
           .then((response) => {
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
@@ -312,7 +312,7 @@
 
         portfolioSeries.setData(chartData.portfolio);
         benchmarkSeries.setData(chartData.benchmark);
-        
+
         // FIX: Defer the fitContent call to ensure the chart container has been sized.
         setTimeout(() => chart.timeScale().fitContent(), 0);
 
@@ -367,7 +367,7 @@
 
         chart.subscribeCrosshairMove(updateLegend);
         updateLegend(null); // Initialize legend with the last value
-        
+
         new ResizeObserver((entries) => {
           if (entries.length === 0 || entries[0].target !== chartContainer)
             return;
