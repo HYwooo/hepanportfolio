@@ -22,8 +22,8 @@ if not API_KEY:
     raise ValueError("ALPHA_VANTAGE_API_KEY environment variable not set.")
 CACHE_DIR = "data_cache"
 TICKERS = ['513110.SHH', '518660.SHH', '159649.SHZ', '515450.SHH']
-# 修改: 基准 Ticker 更改为 ALLW
-BENCHMARK_TICKER = 'ALLW'
+
+BENCHMARK_TICKER = '515580.SHH'
 WEIGHTS = [0.25, 0.25, 0.25, 0.25]
 INITIAL_CAPITAL = 10000
 START_DATE = "2025-09-22"
