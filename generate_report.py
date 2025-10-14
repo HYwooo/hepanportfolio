@@ -12,7 +12,7 @@ from playwright.sync_api import sync_playwright
 API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY') if os.getenv('ALPHA_VANTAGE_API_KEY') else str(random.randint(114514, 1919810114514))  # 请在环境变量中设置您的Alpha Vantage API Key
 CACHE_DIR = "data_cache"
 TICKERS = ['513110.SHH', '518660.SHH', '159649.SHZ', '515450.SHH']
-BENCHMARK_TICKER = '000300.SHH'
+BENCHMARK_TICKER = '510300.SHH'
 WEIGHTS = [0.25, 0.25, 0.25, 0.25]
 INITIAL_CAPITAL = 10000
 START_DATE = "2025-09-22" 
