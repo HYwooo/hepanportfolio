@@ -10,7 +10,7 @@
         <body class="bg-slate-900 text-slate-200 font-sans">
             <main class="min-h-screen flex items-center justify-center p-4">
                 <div class="w-full max-w-4xl rounded-2xl bg-slate-800/50 p-6 md:p-8 shadow-2xl ring-1 ring-white/10 backdrop-blur-xl">
-                    <header class="mb-8"><h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Portfolio Dashboard</h1><p class="text-slate-400 text-sm mt-2">Updated: 2025-10-14 10:23:42 UTC</p></header>
+                    <header class="mb-8"><h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Portfolio Dashboard</h1><p class="text-slate-400 text-sm mt-2">Updated: 2025-10-14 10:47:04 UTC</p></header>
                     <section><h2 class="text-xl font-semibold mb-4 text-slate-300">Performance Chart (Initial: 10,000 USD)</h2><div id="chart-container" class="h-[400px]"></div></section>
                     <section class="mt-8"><h2 class="text-xl font-semibold mb-4 text-slate-300">Key Performance Indicators</h2><div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="border-b border-slate-300/20 text-slate-400"><tr><th class="py-3 px-4 font-medium">Metric</th><th class="py-3 px-4 font-medium">Portfolio</th><th class="py-3 px-4 font-medium">Benchmark (SH000300)</th></tr></thead>
                         <tbody>
@@ -27,14 +27,14 @@
             <script>
                 const chartContainer = document.getElementById('chart-container');
                 const chart = LightweightCharts.createChart(chartContainer, { 
-                    layout: { backgroundColor: '#000000', textColor: '#d1d5db' }, 
+                    layout: {  background: { color: 'transparent' }, textColor: '#d1d5db' }, 
                     grid: { vertLines: { visible: false }, horzLines: { visible: false } }, 
                     rightPriceScale: { scaleMargins: { top: 0.1, bottom: 0.1 }, borderColor: 'rgba(255, 255, 255, 0.2)' }, 
                     timeScale: { borderColor: 'rgba(255, 255, 255, 0.2)' }, 
                     crosshair: { horzLine: { visible: false, labelVisible: false } } 
                 });
 
-                // --- 最终的、经过验证的、绝对正确的修正点 ---
+                
                 const portfolioSeries = chart.addSeries(LightweightCharts.AreaSeries, {
                     topColor: 'rgba(10, 178, 240, 0.5)', bottomColor: 'rgba(10, 178, 240, 0.01)',
                     lineColor: '#0ab2f0', lineWidth: 2, crossHairMarkerVisible: false

@@ -126,14 +126,14 @@ def generate_html_report(portfolio_returns=None, benchmark_returns=None, is_futu
             <script>
                 const chartContainer = document.getElementById('chart-container');
                 const chart = LightweightCharts.createChart(chartContainer, {{ 
-                    layout: {{ backgroundColor: '#000000', textColor: '#d1d5db' }}, 
+                    layout: {{  background: {{ color: 'transparent' }}, textColor: '#d1d5db' }}, 
                     grid: {{ vertLines: {{ visible: false }}, horzLines: {{ visible: false }} }}, 
                     rightPriceScale: {{ scaleMargins: {{ top: 0.1, bottom: 0.1 }}, borderColor: 'rgba(255, 255, 255, 0.2)' }}, 
                     timeScale: {{ borderColor: 'rgba(255, 255, 255, 0.2)' }}, 
                     crosshair: {{ horzLine: {{ visible: false, labelVisible: false }} }} 
                 }});
 
-                // --- 最终的、经过验证的、绝对正确的修正点 ---
+                
                 const portfolioSeries = chart.addSeries(LightweightCharts.AreaSeries, {{
                     topColor: 'rgba(10, 178, 240, 0.5)', bottomColor: 'rgba(10, 178, 240, 0.01)',
                     lineColor: '#0ab2f0', lineWidth: 2, crossHairMarkerVisible: false
@@ -191,16 +191,20 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch()
-            page = browser.new_page()
-            
+            context = browser.new_context(
+            viewport={"width": 1920, "height": 1080},
+            device_scale_factor=3  # 3倍DPI缩放，显著提高清晰度
+        )
+            page = context.new_page()
+
             # 使用 file:// 协议访问本地 HTML 文件
             absolute_html_path = os.path.abspath(html_path)
             page.goto(f'file://{absolute_html_path}')
             
             # 等待JavaScript渲染图表 (重要!)
             # 给予2秒的固定等待时间，确保图表动画和数据加载完成
-            page.wait_for_timeout(2000) 
-            
+            page.wait_for_load_state('networkidle') 
+            page.wait_for_timeout(2000)  # 额外等待确保图表渲染完成
             # 定位到图表所在的div容器
             chart_element = page.locator('#chart-container')
             
