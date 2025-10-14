@@ -232,7 +232,6 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
 
 # --- 主执行逻辑 (保持不变) ---
 if __name__ == "__main__":
-    # ... (你的主逻辑保持不变) ...
     current_utc = datetime.now(timezone.utc)
     utc_plus_8_time = current_utc + timedelta(hours=8)
     if not (19 <= utc_plus_8_time.hour < 23):
