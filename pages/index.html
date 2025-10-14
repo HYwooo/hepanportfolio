@@ -163,6 +163,8 @@
     </footer>
 
     <script>
+      let benchmarkTickerName = "Benchmark";
+
       document.addEventListener("DOMContentLoaded", () => {
         fetch("data.json", { cache: "no-store" }) // Use no-store to avoid caching of the data file
           .then((response) => {
@@ -243,7 +245,8 @@
           data.initialCapital.toLocaleString("en-US");
         document.getElementById("benchmark-ticker").textContent =
           data.benchmarkTicker;
-
+        benchmarkTickerName = data.benchmarkTicker;
+        //console.log(benchmarkTickerName);
         // --- Populate Metrics Table ---
         const m = data.metrics;
         setMetric("metric-total-return", m["Total Return"]);
@@ -335,7 +338,7 @@
                     </div>
                     <div class="flex items-center mt-1">
                         <div class="w-3 h-3 rounded-full bg-[#a855f7] mr-2"></div>
-                        <span class="text-slate-300 mr-2 text-lg">Benchmark:</span>
+                        <span class="text-slate-300 mr-2 text-lg">${benchmarkTickerName}:</span>
                         <span class="font-bold text-xl text-[#a855f7]">${bPrice}</span>
                     </div>
                 `;

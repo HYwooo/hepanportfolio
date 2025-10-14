@@ -1,24 +1,28 @@
 {
     "status": "success",
-    "lastUpdated": "2025-10-14 14:21:52 UTC",
+    "lastUpdated": "2025-10-14 16:09:13 UTC",
     "initialCapital": 10000,
-    "benchmarkTicker": "000300",
+    "benchmarkTicker": "ALLW",
     "metrics": {
-        "Total Return": 0.037274455284817654,
-        "Annualized Return": 1.5149004901373044,
-        "Annualized Volatility": 0.09462142552547581,
+        "Total Return": 0.03464235184348752,
+        "Annualized Return": 1.5949383790703253,
+        "Annualized Volatility": 0.10013502109950485,
         "Max Drawdown": -0.0024912278678856925,
-        "Sharpe Ratio": 9.597273535402476,
-        "Sortino Ratio": 65.35684086869297,
-        "Benchmark Total Return": 0.003637724074250892,
-        "Benchmark Annualized Return": 0.09582150369720877,
-        "Benchmark Annualized Volatility": 0.1878130333981006,
-        "Benchmark Max Drawdown": -0.03618699466310715,
-        "Benchmark Sharpe Ratio": 0.46650513268345567,
-        "Benchmark Sortino Ratio": 0.6837326898488141
+        "Sharpe Ratio": 9.387102031295184,
+        "Sortino Ratio": 64.1789309785814,
+        "Benchmark Total Return": 0.009820820752599824,
+        "Benchmark Annualized Return": 0.31474335298308986,
+        "Benchmark Annualized Volatility": 0.10422419776320342,
+        "Benchmark Max Drawdown": -0.014074595355383579,
+        "Benchmark Sharpe Ratio": 2.48314438320681,
+        "Benchmark Sortino Ratio": 4.512735125467847
     },
     "chartData": {
         "portfolio": [
+            {
+                "time": "2025-09-22",
+                "value": 10000
+            },
             {
                 "time": "2025-09-23",
                 "value": 10065.37
@@ -54,52 +58,48 @@
             {
                 "time": "2025-10-13",
                 "value": 10346.42
-            },
-            {
-                "time": "2025-10-14",
-                "value": 10372.74
             }
         ],
         "benchmark": [
             {
+                "time": "2025-09-22",
+                "value": 10000
+            },
+            {
                 "time": "2025-09-23",
-                "value": 9993.74
+                "value": 10023.58
             },
             {
                 "time": "2025-09-24",
-                "value": 10096.1
+                "value": 9998.19
             },
             {
                 "time": "2025-09-25",
-                "value": 10156.72
+                "value": 10000.0
             },
             {
                 "time": "2025-09-26",
-                "value": 10060.68
+                "value": 10016.9
             },
             {
                 "time": "2025-09-29",
-                "value": 10215.46
+                "value": 10097.93
             },
             {
                 "time": "2025-09-30",
-                "value": 10261.1
+                "value": 10112.44
             },
             {
                 "time": "2025-10-09",
-                "value": 10413.2
+                "value": 10019.93
             },
             {
                 "time": "2025-10-10",
-                "value": 10208.34
+                "value": 9970.11
             },
             {
                 "time": "2025-10-13",
-                "value": 10157.81
-            },
-            {
-                "time": "2025-10-14",
-                "value": 10036.38
+                "value": 10098.21
             }
         ]
     }

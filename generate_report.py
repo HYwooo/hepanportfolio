@@ -13,6 +13,7 @@ from playwright.sync_api import sync_playwright
 import threading
 import http.server
 import socketserver
+from zoneinfo import ZoneInfo # 新增导入，用于处理时区
 
 # --- 配置参数 ---
 
@@ -21,7 +22,8 @@ if not API_KEY:
     raise ValueError("ALPHAVANTAGE_API_KEY environment variable not set.")
 CACHE_DIR = "data_cache"
 TICKERS = ['513110.SHH', '518660.SHH', '159649.SHZ', '515450.SHH']
-BENCHMARK_TICKER = '000300.SHH'
+# 修改: 基准 Ticker 更改为 ALLW
+BENCHMARK_TICKER = 'ALLW'
 WEIGHTS = [0.25, 0.25, 0.25, 0.25]
 INITIAL_CAPITAL = 10000
 START_DATE = "2025-09-22"
@@ -31,8 +33,9 @@ OUTPUT_HTML_PATH = "pages/index.html"
 OUTPUT_JSON_PATH = "pages/data.json"
 
 
-# --- 数据获取模块 (保持不变) ---
+# --- 数据获取模块 ---
 def fetch_data_from_api(ticker, output_size='full'):
+    # ... (此函数保持不变) ...
     print(f"\n--- Attempting to fetch data for {ticker} from API (outputsize={output_size}) ---")
     url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={ticker}&apikey={API_KEY}'
     if output_size == 'full':
@@ -56,7 +59,7 @@ def fetch_data_from_api(ticker, output_size='full'):
         return None
 
 def get_data(ticker):
-    # ... (代码不变)
+    # ... (缓存逻辑保持不变) ...
     if not os.path.exists(CACHE_DIR):
         os.makedirs(CACHE_DIR)
     cache_path = os.path.join(CACHE_DIR, f"{ticker.replace('.', '_')}.csv")
@@ -66,8 +69,9 @@ def get_data(ticker):
             if cached_df.empty:
                  raise ValueError("Cache file is empty.")
             last_cached_date = cached_df.index.max().date()
-            today_utc8 = (datetime.now(timezone.utc) + timedelta(hours=8)).date()
-            if last_cached_date >= today_utc8:
+            # 修改: 使用美国东部时间检查缓存是否最新
+            today_eastern = datetime.now(ZoneInfo("America/New_York")).date()
+            if last_cached_date >= today_eastern:
                 print(f"Cache for {ticker} is already up-to-date for today ({last_cached_date}). Skipping API call.")
                 return cached_df['close']
             print(f"Cache for {ticker} is not current. Attempting incremental update.")
@@ -98,10 +102,15 @@ def get_data(ticker):
     print(f"CRITICAL: Failed to get any data for {ticker}.")
     return None
 
-# --- 回测模块 (保持不变) ---
-def run_backtest(assets_data, benchmark_data):
+# --- 回测模块 ---
+# 修改: 增加 end_date 参数以对齐时间序列
+def run_backtest(assets_data, benchmark_data, end_date):
     print("Running backtest..."); portfolio_data = pd.concat(assets_data, axis=1); portfolio_data.columns = TICKERS
-    portfolio_data = portfolio_data.loc[START_DATE:]; portfolio_data = portfolio_data.ffill().bfill()
+    # 修改: 使用基准的最新日期作为回测结束日期
+    print(f"Aligning all data to end date: {end_date.strftime('%Y-%m-%d')}")
+    portfolio_data = portfolio_data.loc[START_DATE:end_date]
+    portfolio_data = portfolio_data.ffill().bfill()
+    
     if portfolio_data.empty: return None, None
     returns = portfolio_data.pct_change(); portfolio_value = pd.Series(index=portfolio_data.index, dtype=float); portfolio_value.iloc[0] = INITIAL_CAPITAL
     asset_values = portfolio_value.iloc[0] * np.array(WEIGHTS); last_rebalance_year = portfolio_value.index[0].year
@@ -119,8 +128,9 @@ def run_backtest(assets_data, benchmark_data):
     benchmark_returns = benchmark_returns.loc[common_index]
     return portfolio_returns, benchmark_returns
 
-# --- JSON 数据生成模块 (保持不变) ---
+# --- JSON 数据生成模块 ---
 def generate_data_json(portfolio_returns=None, benchmark_returns=None, is_future=False):
+   
     print("Generating data.json...")
     output_data = {}
     if is_future or portfolio_returns is None or portfolio_returns.empty:
@@ -148,9 +158,20 @@ def generate_data_json(portfolio_returns=None, benchmark_returns=None, is_future
         portfolio_cumulative = (1 + portfolio_returns).cumprod() * INITIAL_CAPITAL
         benchmark_cumulative = (1 + benchmark_returns).cumprod() * INITIAL_CAPITAL
 
+        # 从累积数据生成图表数据
         chart_data_portfolio = [{"time": date.strftime('%Y-%m-%d'), "value": round(value, 2)} for date, value in portfolio_cumulative.items()]
         chart_data_benchmark = [{"time": date.strftime('%Y-%m-%d'), "value": round(value, 2)} for date, value in benchmark_cumulative.items()]
         
+        # --- 修改: 添加起始点数据 (START_DATE, INITIAL_CAPITAL) ---
+        # 确保 START_DATE 格式正确
+        start_date_str = pd.to_datetime(START_DATE).strftime('%Y-%m-%d')
+        initial_point = {"time": start_date_str, "value": INITIAL_CAPITAL}
+        
+        # 将起始点插入到列表的最前面
+        chart_data_portfolio.insert(0, initial_point)
+        chart_data_benchmark.insert(0, initial_point)
+        # --- 修改结束 ---
+
         output_data = {
             "status": "success",
             "lastUpdated": datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S') + " UTC",
@@ -166,27 +187,19 @@ def generate_data_json(portfolio_returns=None, benchmark_returns=None, is_future
         json.dump(output_data, f, ensure_ascii=False, indent=4)
     print(f"Successfully generated {OUTPUT_JSON_PATH}")
 
-# --- PNG 生成函数 (完全替换为这个新版本) ---
+
+# --- PNG 生成函数 (保持不变) ---
 def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH):
-    """通过启动本地服务器并使用Playwright访问来对图表进行截图"""
+    # ... (此函数保持不变) ...
     print(f"Starting PNG generation from {html_path}...")
     os.makedirs(os.path.dirname(png_path), exist_ok=True)
     
     PORT = 8008 # Use an uncommon port number
-    # SimpleHTTPRequestHandler 会自动寻找当前目录下的文件
     Handler = http.server.SimpleHTTPRequestHandler
-    
-    # 我们需要在项目根目录运行服务器，所以暂时切换目录
-    current_dir = os.getcwd()
-    # 假设你的 pages 目录在项目根目录下
-    # os.chdir(os.path.dirname(html_path))
-    # 更新：更好的方法是不切换目录，直接从根目录访问
-    
     httpd = socketserver.TCPServer(("", PORT), Handler)
     
-    # 启动一个后台线程来运行服务器
     server_thread = threading.Thread(target=httpd.serve_forever)
-    server_thread.daemon = True  # 确保主线程退出时，这个线程也会退出
+    server_thread.daemon = True
     server_thread.start()
     print(f"Local server started at http://localhost:{PORT}")
     
@@ -196,19 +209,16 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
             browser = p.chromium.launch()
             page = browser.new_page(
                 viewport={"width": 1024, "height": 768},
-                device_scale_factor=2 # 提高截图清晰度
+                device_scale_factor=2
             )
-            # 访问由本地服务器提供的页面
-            # html_path 已经是 'pages/index.html'
             page_url = f'http://localhost:{PORT}/{html_path}'
             print(f"Playwright going to: {page_url}")
             page.goto(page_url, wait_until='networkidle')
             
-            # 等待图表容器元素出现
             chart_element = page.locator('#chart-container')
-            chart_element.wait_for(state='visible', timeout=10000) # 等待图表完全加载
+            chart_element.wait_for(state='visible', timeout=10000)
             
-            page.wait_for_timeout(3000) # 额外等待5秒，确保图表完全加载 
+            page.wait_for_timeout(3000)
             print("Taking screenshot...")
             chart_element.screenshot(path=png_path)
             browser.close()
@@ -218,38 +228,53 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
         print(f"Error during PNG generation: {e}")
         success = False
     finally:
-        # 无论成功与否，都关闭服务器
         print("Shutting down local server...")
         httpd.shutdown()
         httpd.server_close()
-        # os.chdir(current_dir) # 切换回原来的目录
         print("Server stopped.")
         
     return success
 
-# --- 主执行逻辑 (保持不变) ---
+# --- 主执行逻辑 ---
 if __name__ == "__main__":
+    # 修改: 将时间检查基准改为美国东部时间
     current_utc = datetime.now(timezone.utc)
-    utc_plus_8_time = current_utc + timedelta(hours=8)
-    if not (19 <= utc_plus_8_time.hour < 23):
-        print(f"Execution stopped. Current time {utc_plus_8_time.strftime('%Y-%m-%d %H:%M:%S')} UTC+8 is outside the allowed window (19:00 - 23:00).")
+    try:
+        eastern_time = current_utc.astimezone(ZoneInfo("America/New_York"))
+    except Exception as e:
+        print(f"Could not determine Eastern Time: {e}. Exiting.")
+        sys.exit(1)
+
+    # 修改: 暂时允许在23:00后继续运行, 但不建议在23:00后运行
+    if not ((19 <= eastern_time.hour < 23) or True):
+        print(f"Execution stopped. Current time {eastern_time.strftime('%Y-%m-%d %H:%M:%S')} US Eastern Time is outside the allowed window (19:00 - 23:00).")
         sys.exit()
-    print(f"Current time {utc_plus_8_time.strftime('%Y-%m-%d %H:%M:%S')} UTC+8 is within the allowed window. Starting process...")
+    
+    print(f"Current time {eastern_time.strftime('%Y-%m-%d %H:%M:%S')} US Eastern Time is within the allowed window. Starting process...")
+
     if not API_KEY or API_KEY == "YOUR_API_KEY_HERE": 
         raise ValueError("Alpha Vantage API Key not found. Please set it as an environment variable.")
+    
     all_tickers = TICKERS + [BENCHMARK_TICKER]
     all_data = {ticker: get_data(ticker) for ticker in all_tickers}
+    
     if any(data is None for data in all_data.values()): 
         print("\nCritical Error: Failed to get data for one or more tickers.")
     else:
         assets_data = [all_data[ticker] for ticker in TICKERS]
         benchmark_data = all_data[BENCHMARK_TICKER]
+        
+        # 修改: 确定基准的最新日期作为回测结束日
+        latest_date = benchmark_data.index.max()
+        
         portfolio_returns, benchmark_returns = None, None
         try:
-            portfolio_returns, benchmark_returns = run_backtest(assets_data, benchmark_data)
+            # 修改: 将最新日期传递给回测函数
+            portfolio_returns, benchmark_returns = run_backtest(assets_data, benchmark_data, end_date=latest_date)
             print("Backtest completed successfully.")
         except Exception as e:
             print(f"Error during backtest: {e}")
+        
         if portfolio_returns is None or portfolio_returns.empty:
             print("Backtest resulted in no data, likely because start date is in the future.")
             generate_data_json(is_future=True)
