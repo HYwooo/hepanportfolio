@@ -38,6 +38,7 @@ def fetch_data_from_api(ticker):
 def get_data(ticker):
     if not os.path.exists(CACHE_DIR): os.makedirs(CACHE_DIR)
     cache_path = os.path.join(CACHE_DIR, f"{ticker.replace('.', '_')}.csv")
+    print(f"Cache path for csv: {cache_path} .")
     if os.path.exists(cache_path):
         try:
             cached_df = pd.read_csv(cache_path, index_col='date', parse_dates=True)
@@ -195,7 +196,7 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
             viewport={"width": 1920, "height": 1080},
             device_scale_factor=3  # 3倍DPI缩放，显著提高清晰度
         )
-            page = context.new_page()
+            page = browser.new_page()
 
             # 使用 file:// 协议访问本地 HTML 文件
             absolute_html_path = os.path.abspath(html_path)
