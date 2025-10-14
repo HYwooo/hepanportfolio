@@ -17,9 +17,9 @@ from zoneinfo import ZoneInfo # 新增导入，用于处理时区
 
 # --- 配置参数 ---
 
-API_KEY = os.getenv("ALPHAVANTAGE_API_KEY")
+API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
 if not API_KEY:
-    raise ValueError("ALPHAVANTAGE_API_KEY environment variable not set.")
+    raise ValueError("ALPHA_VANTAGE_API_KEY environment variable not set.")
 CACHE_DIR = "data_cache"
 TICKERS = ['513110.SHH', '518660.SHH', '159649.SHZ', '515450.SHH']
 # 修改: 基准 Ticker 更改为 ALLW
