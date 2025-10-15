@@ -64,7 +64,7 @@ jobs:
       
       # --- 新增步骤: 安装 Playwright 浏览器 ---
       - name: Install Playwright Browsers
-        run: playwright install chromium --with-deps
+        run: playwright install --with-deps
       
       - name: Run Python script to generate report and PNG
         env:
