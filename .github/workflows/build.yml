@@ -75,7 +75,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
+          git pull
           # 注意：检查文件是否存在
           if [ -f ./pages/index.html ]; then
             git add ./pages/index.html
@@ -84,12 +84,14 @@ jobs:
           else
             echo "./pages/index.html not found, skipping commit."
           fi
+          git pull
           # 同时处理可能的截图
           if [ -f ./pages/portfolio_chart.png ]; then
             git add ./pages/portfolio_chart.png
             git diff --staged --quiet || git commit -m "ci: Update portfolio screenshot."
             git push
           fi
+          git pull
           git add data_cache/ pages/
           git diff --staged --quiet || git commit -m "ci: Update csv files or other files."
           git push
