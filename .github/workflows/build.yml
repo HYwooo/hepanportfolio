@@ -1,4 +1,4 @@
-name: Build and Deploy Portfolio Dashboard
+name: Build Portfolio Dashboard
 
 on:
   workflow_dispatch:
@@ -29,6 +29,18 @@ jobs:
         with:
           python-version: '3.13'
 
+      - name: Install dependencies 
+        run: |
+             sudo apt-get update
+             sudo apt-get install -y \
+             libdrm2 \
+             libgbm1 \
+             libxrandr2 \
+             libxcomposite1 \
+             libxdamage1 \
+             libxss1 \
+             libatk-bridge2.0-0
+             
       - name: Cache data directory
         uses: actions/cache@v4
         with:
