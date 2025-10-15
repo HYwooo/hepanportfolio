@@ -22,7 +22,7 @@ if not API_KEY:
     raise ValueError("ALPHA_VANTAGE_API_KEY environment variable not set.")
 CACHE_DIR = "data_cache"
 TICKERS = ['513110.SHH', '518660.SHH', '159649.SHZ', '515450.SHH']
-BENCHMARK_TICKER = '515580.SHH'
+BENCHMARK_TICKER = '510300.SHH'
 WEIGHTS = [0.25, 0.25, 0.25, 0.25]
 INITIAL_CAPITAL = 10000
 START_DATE = "2025-09-22"
@@ -205,7 +205,7 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
     success = False
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch()
+            browser = p.firefox.launch()
             page = browser.new_page(
                 viewport={"width": 1920, "height": 1080},
                 device_scale_factor=2
@@ -250,7 +250,7 @@ if __name__ == "__main__":
         sys.exit()
     
     print(f"Current time {eastern_time.strftime('%Y-%m-%d %H:%M:%S')} US Eastern Time is within the allowed window. Starting process...")
-
+    
     if not API_KEY or API_KEY == "YOUR_API_KEY_HERE": 
         raise ValueError("Alpha Vantage API Key not found. Please set it as an environment variable.")
     

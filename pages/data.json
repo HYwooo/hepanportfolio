@@ -1,8 +1,8 @@
 {
     "status": "success",
-    "lastUpdated": "2025-10-15 00:56:56 UTC",
+    "lastUpdated": "2025-10-15 01:14:34 UTC",
     "initialCapital": 10000,
-    "benchmarkTicker": "515580",
+    "benchmarkTicker": "510300",
     "metrics": {
         "Total Return": 0.037274455284817654,
         "Annualized Return": 1.5149004901373044,
@@ -10,12 +10,12 @@
         "Max Drawdown": -0.0024912278678856925,
         "Sharpe Ratio": 9.597273535402476,
         "Sortino Ratio": 65.35684086869297,
-        "Benchmark Total Return": -0.027272727272727337,
-        "Benchmark Annualized Return": -0.5018323387937029,
-        "Benchmark Annualized Volatility": 0.3969214465097193,
-        "Benchmark Max Drawdown": -0.08547008547008539,
-        "Benchmark Sharpe Ratio": -1.6225217320167769,
-        "Benchmark Sortino Ratio": -2.0553536769072145
+        "Benchmark Total Return": 0.005628924009525749,
+        "Benchmark Annualized Return": 0.15194422879426872,
+        "Benchmark Annualized Volatility": 0.18937121918256272,
+        "Benchmark Max Drawdown": -0.035506644518272346,
+        "Benchmark Sharpe Ratio": 0.7278942954864848,
+        "Benchmark Sortino Ratio": 1.0907786481223303
     },
     "chartData": {
         "portfolio": [
@@ -71,43 +71,43 @@
             },
             {
                 "time": "2025-09-23",
-                "value": 9975.21
+                "value": 10006.49
             },
             {
                 "time": "2025-09-24",
-                "value": 10190.08
+                "value": 10095.26
             },
             {
                 "time": "2025-09-25",
-                "value": 10371.9
+                "value": 10164.54
             },
             {
                 "time": "2025-09-26",
-                "value": 10123.97
+                "value": 10069.28
             },
             {
                 "time": "2025-09-29",
-                "value": 10297.52
+                "value": 10235.98
             },
             {
                 "time": "2025-09-30",
-                "value": 10363.64
+                "value": 10264.13
             },
             {
                 "time": "2025-10-09",
-                "value": 10636.36
+                "value": 10426.5
             },
             {
                 "time": "2025-10-10",
-                "value": 10239.67
+                "value": 10216.5
             },
             {
                 "time": "2025-10-13",
-                "value": 10165.29
+                "value": 10158.04
             },
             {
                 "time": "2025-10-14",
-                "value": 9727.27
+                "value": 10056.29
             }
         ]
     }
