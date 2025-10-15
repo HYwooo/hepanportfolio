@@ -17,6 +17,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 安装 Playwright 的系统级依赖和浏览器
-RUN playwright install --with-deps
+RUN playwright install chromium --with-deps
 # 启动容器后什么都不做
 CMD ["tail", "-f", "/dev/null"] # 保持容器运行

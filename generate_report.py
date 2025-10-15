@@ -22,7 +22,6 @@ if not API_KEY:
     raise ValueError("ALPHA_VANTAGE_API_KEY environment variable not set.")
 CACHE_DIR = "data_cache"
 TICKERS = ['513110.SHH', '518660.SHH', '159649.SHZ', '515450.SHH']
-
 BENCHMARK_TICKER = '515580.SHH'
 WEIGHTS = [0.25, 0.25, 0.25, 0.25]
 INITIAL_CAPITAL = 10000
@@ -59,7 +58,7 @@ def fetch_data_from_api(ticker, output_size='full'):
         return None
 
 def get_data(ticker):
-    # ... (缓存逻辑保持不变) ...
+    
     if not os.path.exists(CACHE_DIR):
         os.makedirs(CACHE_DIR)
     cache_path = os.path.join(CACHE_DIR, f"{ticker.replace('.', '_')}.csv")
@@ -208,7 +207,7 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
         with sync_playwright() as p:
             browser = p.chromium.launch()
             page = browser.new_page(
-                viewport={"width": 1024, "height": 768},
+                viewport={"width": 1920, "height": 1080},
                 device_scale_factor=2
             )
             page_url = f'http://localhost:{PORT}/{html_path}'
@@ -218,7 +217,7 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
             chart_element = page.locator('#chart-container')
             chart_element.wait_for(state='visible', timeout=10000)
             
-            page.wait_for_timeout(10000)
+            page.wait_for_timeout(5000)
             print("Taking screenshot...")
             chart_element.screenshot(path=png_path)
             browser.close()
