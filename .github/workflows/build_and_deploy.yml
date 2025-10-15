@@ -24,16 +24,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Cache data directory
         uses: actions/cache@v4
         with:
           path: data_cache
-          key: ${{ runner.os }}-data-${{ github.run_id }}
+          key: ${{ runner.os }}-data-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-data-
 
@@ -42,9 +42,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+      
       # --- 新增步骤: 安装 Playwright 浏览器 ---
       - name: Install Playwright Browsers
-        run: playwright install --with-deps
+        run: playwright install chromium --with-deps
       
       - name: Run Python script to generate report and PNG
         env:
@@ -70,7 +78,7 @@ jobs:
             git diff --staged --quiet || git commit -m "ci: Update portfolio screenshot."
             git push
           fi
-          git add *
+          git add data_cache/ pages/
           git diff --staged --quiet || git commit -m "ci: Update csv files or other files."
           git push
 
@@ -83,4 +91,3 @@ jobs:
         with:
           # 上传整个仓库的内容
           path: './pages'
-
