@@ -34,6 +34,7 @@ OUTPUT_JSON_PATH = "pages/data.json"
 
 # --- 数据获取模块 ---
 def fetch_data_from_api(ticker, output_size='full'):
+    # https://www.stockapi.com.cn/v1/base/day?code=600004&endDate=2021-10-15&startDate=2021-10-10&calculationCycle=100
     # ... (此函数保持不变) ...
     print(f"\n--- Attempting to fetch data for {ticker} from API (outputsize={output_size}) ---")
     url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={ticker}&apikey={API_KEY}'
@@ -175,7 +176,7 @@ def generate_data_json(portfolio_returns=None, benchmark_returns=None, is_future
             "status": "success",
             "lastUpdated": datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S') + " UTC",
             "initialCapital": INITIAL_CAPITAL,
-            "benchmarkTicker": BENCHMARK_TICKER.split('.')[0],
+            "benchmarkTicker": BENCHMARK_TICKER,
             "metrics": metrics,
             "chartData": {
                 "portfolio": chart_data_portfolio,

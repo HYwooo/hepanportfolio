@@ -8,6 +8,7 @@
       href="https://static.tradingview.com/static/images/favicon.ico"
       rel="icon"
     />
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <style>
@@ -163,12 +164,12 @@
       </div>
     </main>
     <footer class="text-center text-xs text-slate-600 pb-4">
-      Powered by Python, QuantStats & GitHub Actions
+      Powered by Tradingview, QuantStats & GitHub Actions.
     </footer>
 
     <script>
       let benchmarkTickerName = "Benchmark";
-
+      let totalReturn5x = "--";
       document.addEventListener("DOMContentLoaded", () => {
         fetch("data.json", { cache: "no-store" }) // Use no-store to avoid caching of the data file
           .then((response) => {
@@ -260,7 +261,8 @@
           "metric-bench-annual-return",
           m["Benchmark Annualized Return"]
         );
-
+        
+        
         document.getElementById("metric-volatility").textContent =
           (m["Annualized Volatility"] * 100).toFixed(2) + "%";
         document.getElementById("metric-bench-volatility").textContent =
@@ -278,7 +280,7 @@
           m["Benchmark Sortino Ratio"],
           "ratio"
         );
-
+        totalReturn5x = (m["Total Return"] * 5 * 100).toFixed(2) + "%";
         // --- Populate Chart ---
         renderChart(data.chartData);
       }
@@ -303,16 +305,16 @@
         });
 
         const portfolioSeries = chart.addSeries(LightweightCharts.AreaSeries, {
-          topColor: "rgba(10, 178, 240, 0.5)",
-          bottomColor: "rgba(10, 178, 240, 0.01)",
-          lineColor: "#0ab2f0",
+          topColor: "rgba(16, 185, 129, 0.5)",
+          bottomColor: "rgba(16, 185, 129, 0.01)",
+          lineColor: "#10B981",
           lineWidth: 2,
           crossHairMarkerVisible: false,
         });
         const benchmarkSeries = chart.addSeries(LightweightCharts.AreaSeries, {
-          topColor: "rgba(168, 85, 247, 0.5)",
-          bottomColor: "rgba(168, 85, 247, 0.01)",
-          lineColor: "#a855f7",
+          topColor: "rgba(59, 130, 246, 0.5)",
+          bottomColor: "rgba(59, 130, 246, 0.01)",
+          lineColor: "#3B82F6",
           lineWidth: 2,
           crossHairMarkerVisible: false,
         });
@@ -330,13 +332,14 @@
         setTimeout(() => {
           chart.timeScale().fitContent();
         }, 0);
-        createTextWatermark(chart.panes()[0], {
+        
+        LightweightCharts.createTextWatermark(chart.panes()[0], {
           horzAlign: "center",
           vertAlign: "center",
           lines: [
             {
               text: "xueqiu.com/P/ZH3523494",
-              color: "rgba(171, 71, 188, 0.5)",
+              color: "rgba(180, 180, 190, 0.2)",
               fontSize: 24,
             },
           ],
@@ -351,14 +354,19 @@
           legend.innerHTML = `
                     <div class="text-slate-400 text-sm">${date}</div>
                     <div class="flex items-center mt-1">
-                        <div class="w-3 h-3 rounded-full bg-[#0ab2f0] mr-2"></div>
-                        <span class="text-slate-300 mr-2 text-lg">Portfolio:</span>
-                        <span class="font-bold text-xl text-[#0ab2f0]">${pPrice}</span>
+                        <div class="w-2 h-2 rounded-full bg-[#10B981] mr-2"></div>
+                        <span class="text-slate-300 mr-2 text-sm">Portfolio:</span>
+                        <span class="font-bold text-sm text-[#10B981]">${pPrice}</span>
                     </div>
                     <div class="flex items-center mt-1">
-                        <div class="w-3 h-3 rounded-full bg-[#a855f7] mr-2"></div>
-                        <span class="text-slate-300 mr-2 text-lg">${benchmarkTickerName}:</span>
-                        <span class="font-bold text-xl text-[#a855f7]">${bPrice}</span>
+                        <div class="w-2 h-2 rounded-full bg-[#3B82F6] mr-2"></div>
+                        <span class="text-slate-300 mr-2 text-sm">${benchmarkTickerName}:</span>
+                        <span class="font-bold text-sm text-[#3B82F6]">${bPrice}</span>
+                    </div>
+                    <div class="flex items-center mt-1">
+                        
+                        <span class="text-slate-300 mr-2 text-sm">5x Lev. Total Return:</span>
+                        <span class="font-bold text-sm text-[#10B981]">${totalReturn5x}</span>
                     </div>
                 `;
         };
