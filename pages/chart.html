@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio Chart</title>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+      /* Reset basic styles and make body/html fill the viewport */
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* Prevent scrollbars */
+        width: 100vw;
+        height: 100vh;
+        background-color: #292b2d; /* Match chart background color */
+      }
+
+      /* Make the chart container fill its parent completely */
+      #chart-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- The only element in the body is the chart container -->
+    <div id="chart-container"></div>
+
+    <script>
+      // Global variables needed for the chart legend
+      let benchmarkTickerName = "Benchmark";
+      let totalReturn5x = "--";
+      let maxDrawdown5x = "--";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Fetch the data needed for the chart
+        fetch("data.json", { cache: "no-store" })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            if (data.status === "success") {
+              // Set variables needed for the legend tooltip inside the chart
+              benchmarkTickerName = data.benchmarkTicker;
+              const m = data.metrics;
+              totalReturn5x = (m["Total Return"] * 5 * 100).toFixed(2) + "%";
+              maxDrawdown5x = (m["Max Drawdown"] * 5 * 100).toFixed(2) + "%";
+
+              // Render the chart
+              renderChart(data.chartData);
+            } else {
+              console.error("Could not render chart. Status: " + data.status);
+            }
+          })
+          .catch((error) => {
+            console.error("Failed to load chart data:", error);
+            const chartContainer = document.getElementById("chart-container");
+            chartContainer.innerHTML = `<div style="color: #ff5555; text-align: center; padding-top: 20px; font-family: sans-serif;">Error: Could not load chart data.</div>`;
+          });
+      });
+
+      function renderChart(chartData) {
+        const chartContainer = document.getElementById("chart-container");
+        const chart = LightweightCharts.createChart(chartContainer, {
+          layout: {
+            background: { color: "#292B2D" },
+            textColor: "#d1d5db",
+          },
+          grid: {
+            vertLines: { visible: false },
+            horzLines: { visible: false },
+          },
+          rightPriceScale: {
+            scaleMargins: { top: 0.1, bottom: 0.1 },
+            borderColor: "rgba(255, 255, 255, 0.2)",
+          },
+          timeScale: { borderColor: "rgba(255, 255, 255, 0.2)" },
+          crosshair: { horzLine: { visible: false, labelVisible: false } },
+        });
+
+        const portfolioSeries = chart.addSeries(LightweightCharts.AreaSeries, {
+          topColor: "rgba(16, 185, 129, 0.5)",
+          bottomColor: "rgba(16, 185, 129, 0.01)",
+          lineColor: "#10B981",
+          lineWidth: 2,
+          crossHairMarkerVisible: false,
+        });
+        const benchmarkSeries = chart.addSeries(LightweightCharts.AreaSeries, {
+          topColor: "rgba(59, 130, 246, 0.5)",
+          bottomColor: "rgba(59, 130, 246, 0.01)",
+          lineColor: "#3B82F6",
+          lineWidth: 2,
+          crossHairMarkerVisible: false,
+        });
+
+        portfolioSeries.setData(chartData.portfolio);
+        benchmarkSeries.setData(chartData.benchmark);
+
+        // Auto-fit content
+        chart.timeScale().fitContent();
+
+        // Legend setup
+        const legend = document.createElement("div");
+        legend.style = `position: absolute; left: 12px; top: 12px; z-index: 10; font-family: sans-serif; pointer-events: none; color: #d1d5db;`;
+        chartContainer.appendChild(legend);
+
+        const formatPrice = (price) =>
+          price.toLocaleString("en-US", {
+            style: "currency",
+            currency: "USD",
+          });
+
+        const setLegendText = (pPrice, bPrice, date) => {
+          legend.innerHTML = `
+            <div style="font-size: 14px; margin-bottom: 4px;">${date}</div>
+            <div style="display: flex; align-items: center; margin-top: 2px;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #10B981; margin-right: 8px;"></div>
+                <span style="font-size: 14px; margin-right: 8px;">Portfolio:</span>
+                <span style="font-weight: bold; font-size: 14px; color: #10B981;">${pPrice}</span>
+            </div>
+            <div style="display: flex; align-items: center; margin-top: 2px;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #3B82F6; margin-right: 8px;"></div>
+                <span style="font-size: 14px; margin-right: 8px;">${benchmarkTickerName}:</span>
+                <span style="font-weight: bold; font-size: 14px; color: #3B82F6;">${bPrice}</span>
+            </div>
+            <div style="display: flex; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <span style="font-size: 12px; margin-right: 8px;">5x Lev. Total Return:</span>
+                <span style="font-weight: bold; font-size: 12px; color: #10B981;">${totalReturn5x}</span>
+            </div>
+            <div style="display: flex; align-items: center; margin-top: 2px;">
+                <span style="font-size: 12px; margin-right: 8px;">5x Lev. Max Drawdown:</span>
+                <span style="font-weight: bold; font-size: 12px; color: #EF4444;">${maxDrawdown5x}</span>
+            </div>
+          `;
+        };
+
+        const updateLegend = (param) => {
+          let pValue = "N/A", bValue = "N/A", date = "";
+          const validCrosshairPoint = param && param.time && param.point.x >= 0 && param.point.y >= 0;
+
+          if (validCrosshairPoint && param.seriesData) {
+            const pData = param.seriesData.get(portfolioSeries);
+            const bData = param.seriesData.get(benchmarkSeries);
+            pValue = pData ? formatPrice(pData.value) : "N/A";
+            bValue = bData ? formatPrice(bData.value) : "N/A";
+            date = param.time;
+          } else {
+            const portfolioData = chartData.portfolio;
+            const benchmarkData = chartData.benchmark;
+            if (portfolioData.length > 0) {
+              const lastPortfolioBar = portfolioData[portfolioData.length - 1];
+              const lastBenchmarkBar = benchmarkData[benchmarkData.length - 1];
+              pValue = formatPrice(lastPortfolioBar.value);
+              bValue = formatPrice(lastBenchmarkBar.value);
+              date = lastPortfolioBar.time;
+            }
+          }
+          setLegendText(pValue, bValue, date);
+        };
+
+        chart.subscribeCrosshairMove(updateLegend);
+        updateLegend(null);
+
+        // Handle window resizing
+        new ResizeObserver((entries) => {
+          if (entries.length === 0 || entries[0].target !== chartContainer) return;
+          const newRect = entries[0].contentRect;
+          chart.applyOptions({ width: newRect.width, height: newRect.height });
+        }).observe(chartContainer);
+      }
+    </script>
+  </body>
+</html>

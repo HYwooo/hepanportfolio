@@ -290,7 +290,7 @@
         const chartContainer = document.getElementById("chart-container");
         const chart = LightweightCharts.createChart(chartContainer, {
           layout: {
-            background: { color: "#292B2D" }, // used to be "transparent"
+            background: { color: "transparent" }, 
             textColor: "#d1d5db",
           },
           grid: {
@@ -411,23 +411,6 @@
           const newRect = entries[0].contentRect;
           chart.applyOptions({ width: newRect.width, height: newRect.height });
         }).observe(chartContainer);
-      }
-      //!TODO
-      if (window.location.search.includes("chart-only")) {
-        // 移除滚动条
-        document.body.style.overflow = "hidden";
-        
-        // 让图表悬浮在所有元素上方，完全贴合左边界并占满整个屏幕
-        const chartContainer = document.getElementById("chart-container");
-        
-        // 移除所有可能影响定位的父元素样式
-        chartContainer.parentElement.style.padding = "0";
-        chartContainer.parentElement.style.margin = "0";
-        chartContainer.parentElement.parentElement.style.padding = "0";
-        chartContainer.parentElement.parentElement.style.margin = "0";
-        // 设置图表容器样式
-        chartContainer.style.cssText = 
-          "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; margin: 0; padding: 0;";
       }
     </script>
   </body>
