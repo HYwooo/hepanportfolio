@@ -100,7 +100,17 @@
           lineWidth: 2,
           crossHairMarkerVisible: false,
         });
-
+        LightweightCharts.createTextWatermark(chart.panes()[0], {
+          horzAlign: "center",
+          vertAlign: "center",
+          lines: [
+            {
+              text: 'All data is provided "AS IS" without warranty of any kind.',
+              color: "rgba(180, 180, 190, 0.4)",
+              fontSize: 16,
+            },
+          ],
+        });
         portfolioSeries.setData(chartData.portfolio);
         benchmarkSeries.setData(chartData.benchmark);
 
