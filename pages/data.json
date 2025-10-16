@@ -16,6 +16,7 @@
         "Benchmark Max Drawdown": -0.035506644518272346,
         "Benchmark Sharpe Ratio": 2.5144469767338573,
         "Benchmark Sortino Ratio": 3.937971656028802
+        
     },
     "chartData": {
         "portfolio": [
@@ -116,6 +117,14 @@
             {
                 "time": "2025-10-14",
                 "value": 10056.29
+            },
+            {
+                "time": "2025-10-15",
+                "value": 10188.35
+            },
+            {
+                "time": "2025-10-16",
+                "value": 10220.83
             },
             {
                 "time": "2025-10-15",
