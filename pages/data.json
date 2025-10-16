@@ -1,21 +1,21 @@
 {
     "status": "success",
-    "lastUpdated": "2025-10-16 10:21:12 UTC",
+    "lastUpdated": "2025-10-16 11:35:40 UTC",
     "initialCapital": 10000,
     "benchmarkTicker": "510300.SHH",
     "metrics": {
-        "Total Return": 0.04896683887828379,
-        "Annualized Return": 1.9897372636359987,
-        "Annualized Volatility": 0.09683828111430344,
+        "Total Return": 0.053426708317371396,
+        "Annualized Return": 1.983258098465304,
+        "Annualized Volatility": 0.09233332980042135,
         "Max Drawdown": -0.0024912278678856925,
-        "Sharpe Ratio": 11.17314762276114,
-        "Sortino Ratio": 81.67189708531816,
-        "Benchmark Total Return": 0.018835245724182714,
-        "Benchmark Annualized Return": 0.5333961551185973,
-        "Benchmark Annualized Volatility": 0.18936411156455774,
+        "Sharpe Ratio": 11.69087771730411,
+        "Sortino Ratio": 85.1039917308949,
+        "Benchmark Total Return": 0.02208270188352457,
+        "Benchmark Annualized Return": 0.5820011755590815,
+        "Benchmark Annualized Volatility": 0.18066962534109424,
         "Benchmark Max Drawdown": -0.035506644518272346,
-        "Benchmark Sharpe Ratio": 2.2409851611840614,
-        "Benchmark Sortino Ratio": 3.5219836466902636
+        "Benchmark Sharpe Ratio": 2.5144469767338573,
+        "Benchmark Sortino Ratio": 3.937971656028802
     },
     "chartData": {
         "portfolio": [
@@ -66,6 +66,10 @@
             {
                 "time": "2025-10-15",
                 "value": 10489.67
+            },
+            {
+                "time": "2025-10-16",
+                "value": 10534.27
             }
         ],
         "benchmark": [
@@ -116,6 +120,10 @@
             {
                 "time": "2025-10-15",
                 "value": 10188.35
+            },
+            {
+                "time": "2025-10-16",
+                "value": 10220.83
             }
         ]
     }
