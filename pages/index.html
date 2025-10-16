@@ -412,17 +412,22 @@
           chart.applyOptions({ width: newRect.width, height: newRect.height });
         }).observe(chartContainer);
       }
-
-      
+      //!TODO
       if (window.location.search.includes("chart-only")) {
-        // 隐藏除图表外的所有元素
-        document
-          .querySelectorAll("body > *:not(#chart-container)")
-          .forEach((el) => {
-            el.style.display = "none";
-          }); // 设置图表容器全屏
-        document.getElementById("chart-container").style.cssText =
-          "width: 100vw; height: 100vh; position: fixed; top: 0; left: 0;";
+        // 移除滚动条
+        document.body.style.overflow = "hidden";
+        
+        // 让图表悬浮在所有元素上方，完全贴合左边界并占满整个屏幕
+        const chartContainer = document.getElementById("chart-container");
+        
+        // 移除所有可能影响定位的父元素样式
+        chartContainer.parentElement.style.padding = "0";
+        chartContainer.parentElement.style.margin = "0";
+        chartContainer.parentElement.parentElement.style.padding = "0";
+        chartContainer.parentElement.parentElement.style.margin = "0";
+        // 设置图表容器样式
+        chartContainer.style.cssText = 
+          "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; margin: 0; padding: 0;";
       }
     </script>
   </body>
