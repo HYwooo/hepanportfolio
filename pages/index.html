@@ -8,7 +8,7 @@
       href="https://static.tradingview.com/static/images/favicon.ico"
       rel="icon"
     />
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <style>
@@ -170,6 +170,7 @@
     <script>
       let benchmarkTickerName = "Benchmark";
       let totalReturn5x = "--";
+      let maxDrawdown5x = "--";
       document.addEventListener("DOMContentLoaded", () => {
         fetch("data.json", { cache: "no-store" }) // Use no-store to avoid caching of the data file
           .then((response) => {
@@ -261,8 +262,7 @@
           "metric-bench-annual-return",
           m["Benchmark Annualized Return"]
         );
-        
-        
+
         document.getElementById("metric-volatility").textContent =
           (m["Annualized Volatility"] * 100).toFixed(2) + "%";
         document.getElementById("metric-bench-volatility").textContent =
@@ -281,6 +281,7 @@
           "ratio"
         );
         totalReturn5x = (m["Total Return"] * 5 * 100).toFixed(2) + "%";
+        maxDrawdown5x = (m["Max Drawdown"] * 5 * 100).toFixed(2) + "%";
         // --- Populate Chart ---
         renderChart(data.chartData);
       }
@@ -332,15 +333,15 @@
         setTimeout(() => {
           chart.timeScale().fitContent();
         }, 0);
-        
+
         LightweightCharts.createTextWatermark(chart.panes()[0], {
           horzAlign: "center",
           vertAlign: "center",
           lines: [
             {
-              text: "xueqiu.com/P/ZH3523494",
-              color: "rgba(180, 180, 190, 0.2)",
-              fontSize: 24,
+              text: 'All data is provided "AS IS" without warranty of any kind.',
+              color: "rgba(180, 180, 190, 0.4)",
+              fontSize: 20,
             },
           ],
         });
@@ -364,9 +365,12 @@
                         <span class="font-bold text-sm text-[#3B82F6]">${bPrice}</span>
                     </div>
                     <div class="flex items-center mt-1">
-                        
                         <span class="text-slate-300 mr-2 text-sm">5x Lev. Total Return:</span>
                         <span class="font-bold text-sm text-[#10B981]">${totalReturn5x}</span>
+                    </div>
+                    <div class="flex items-center mt-1">
+                        <span class="text-slate-300 mr-2 text-sm">5x Lev. Max Drawdown:</span>
+                        <span class="font-bold text-sm text-[#EF4444]">${maxDrawdown5x}</span>
                     </div>
                 `;
         };

@@ -208,7 +208,7 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
         with sync_playwright() as p:
             browser = p.firefox.launch()
             page = browser.new_page(
-                viewport={"width": 1920, "height": 1080},
+                viewport={"width": 2560, "height": 1600},
                 device_scale_factor=2
             )
             page_url = f'http://localhost:{PORT}/{html_path}'
