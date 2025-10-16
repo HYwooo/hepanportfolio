@@ -1,15 +1,15 @@
 {
     "status": "success",
-    "lastUpdated": "2025-10-16 15:50:49 UTC",
+    "lastUpdated": "2025-10-16 16:01:47 UTC",
     "initialCapital": 10000,
     "benchmarkTicker": "510300.SHH",
     "metrics": {
-        "Total Return": 0.053426708317371396,
-        "Annualized Return": 1.983258098465304,
-        "Annualized Volatility": 0.09233332980042135,
+        "Total Return": 0.051320662727678545,
+        "Annualized Return": 1.8604818940873442,
+        "Annualized Volatility": 0.09284533780264591,
         "Max Drawdown": -0.0024912278678856925,
-        "Sharpe Ratio": 11.69087771730411,
-        "Sortino Ratio": 85.1039917308949,
+        "Sharpe Ratio": 11.172292486034744,
+        "Sortino Ratio": 81.77992587809591,
         "Benchmark Total Return": 0.02208270188352457,
         "Benchmark Annualized Return": 0.5820011755590815,
         "Benchmark Annualized Volatility": 0.18066962534109424,
@@ -69,7 +69,7 @@
             },
             {
                 "time": "2025-10-16",
-                "value": 10534.27
+                "value": 10513.21
             }
         ],
         "benchmark": [
