@@ -29,6 +29,7 @@ START_DATE = "2025-09-22"
 RISK_FREE_RATE = 0.02
 OUTPUT_PNG_PATH = "pages/portfolio_chart.png"
 OUTPUT_HTML_PATH = "pages/index.html"
+OUTPUT_HTML_CHART_PATH = "pages/portfolio_chart.html"
 OUTPUT_JSON_PATH = "pages/data.json"
 
 
@@ -189,7 +190,7 @@ def generate_data_json(portfolio_returns=None, benchmark_returns=None, is_future
 
 
 # --- PNG 生成函数 (保持不变) ---
-def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH):
+def generate_png_from_html(html_path=OUTPUT_HTML_CHART_PATH, png_path=OUTPUT_PNG_PATH):
     # ... (此函数保持不变) ...
     print(f"Starting PNG generation from {html_path}...")
     os.makedirs(os.path.dirname(png_path), exist_ok=True)
@@ -208,7 +209,7 @@ def generate_png_from_html(html_path=OUTPUT_HTML_PATH, png_path=OUTPUT_PNG_PATH)
         with sync_playwright() as p:
             browser = p.firefox.launch()
             page = browser.new_page(
-                viewport={"width": 2560, "height": 1600},
+                viewport={"width": 800, "height": 450},
                 device_scale_factor=2
             )
             page_url = f'http://localhost:{PORT}/{html_path}'
