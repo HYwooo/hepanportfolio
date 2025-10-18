@@ -153,8 +153,11 @@
         };
 
         const updateLegend = (param) => {
-          let pValue = "N/A", bValue = "N/A", date = "";
-          const validCrosshairPoint = param && param.time && param.point.x >= 0 && param.point.y >= 0;
+          let pValue = "N/A",
+            bValue = "N/A",
+            date = "";
+          const validCrosshairPoint =
+            param && param.time && param.point.x >= 0 && param.point.y >= 0;
 
           if (validCrosshairPoint && param.seriesData) {
             const pData = param.seriesData.get(portfolioSeries);
@@ -181,7 +184,8 @@
 
         // Handle window resizing
         new ResizeObserver((entries) => {
-          if (entries.length === 0 || entries[0].target !== chartContainer) return;
+          if (entries.length === 0 || entries[0].target !== chartContainer)
+            return;
           const newRect = entries[0].contentRect;
           chart.applyOptions({ width: newRect.width, height: newRect.height });
         }).observe(chartContainer);
