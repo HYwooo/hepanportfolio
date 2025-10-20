@@ -1,21 +1,21 @@
 {
     "status": "success",
-    "lastUpdated": "2025-10-17 12:02:12 UTC",
+    "lastUpdated": "2025-10-20 16:06:44 UTC",
     "initialCapital": 10000,
     "benchmarkTicker": "510300.SHH",
     "metrics": {
-        "Total Return": 0.05827161489996624,
-        "Annualized Return": 1.9978247815621915,
-        "Annualized Volatility": 0.08840859304983475,
+        "Total Return": 0.03464235184348752,
+        "Annualized Return": 1.5949383790703253,
+        "Annualized Volatility": 0.10013502109950485,
         "Max Drawdown": -0.0024912278678856925,
-        "Sharpe Ratio": 12.261846506733402,
-        "Sortino Ratio": 88.95609761756154,
-        "Benchmark Total Return": 0.001082485386447063,
-        "Benchmark Annualized Return": 0.02119367621797319,
-        "Benchmark Annualized Volatility": 0.19917822290747125,
-        "Benchmark Max Drawdown": -0.039867109634551534,
-        "Benchmark Sharpe Ratio": 0.09805301471028702,
-        "Benchmark Sortino Ratio": 0.1363028257861961
+        "Sharpe Ratio": 9.387102031295184,
+        "Sortino Ratio": 64.1789309785814,
+        "Benchmark Total Return": 0.015804286642130405,
+        "Benchmark Annualized Return": 0.5512477104507287,
+        "Benchmark Annualized Volatility": 0.19073501841183557,
+        "Benchmark Max Drawdown": -0.02574750830564765,
+        "Benchmark Sharpe Ratio": 2.2850330468102635,
+        "Benchmark Sortino Ratio": 3.571695642770433
     },
     "chartData": {
         "portfolio": [
@@ -58,22 +58,6 @@
             {
                 "time": "2025-10-13",
                 "value": 10346.42
-            },
-            {
-                "time": "2025-10-14",
-                "value": 10372.74
-            },
-            {
-                "time": "2025-10-15",
-                "value": 10489.67
-            },
-            {
-                "time": "2025-10-16",
-                "value": 10534.27
-            },
-            {
-                "time": "2025-10-17",
-                "value": 10582.72
             }
         ],
         "benchmark": [
@@ -116,22 +100,6 @@
             {
                 "time": "2025-10-13",
                 "value": 10158.04
-            },
-            {
-                "time": "2025-10-14",
-                "value": 10056.29
-            },
-            {
-                "time": "2025-10-15",
-                "value": 10188.35
-            },
-            {
-                "time": "2025-10-16",
-                "value": 10220.83
-            },
-            {
-                "time": "2025-10-17",
-                "value": 10010.82
             }
         ]
     }
