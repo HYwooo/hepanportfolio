@@ -17,7 +17,7 @@ from zoneinfo import ZoneInfo # 新增导入，用于处理时区
 
 # --- 配置参数 ---
 
-API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY") if os.getenv("ALPHA_VANTAGE_API_KEY") else "114514"
+API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY") if os.getenv("ALPHA_VANTAGE_API_KEY") else "TQONN184ZFV8GHJG"
 if not API_KEY:
     raise ValueError("ALPHA_VANTAGE_API_KEY environment variable not set.")
 CACHE_DIR = "data_cache"
